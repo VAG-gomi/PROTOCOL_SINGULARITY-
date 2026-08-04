@@ -1,1 +1,410 @@
+==================================================
+ADAPTIVE SIMULATION | Phases: 5 | Max Stability: 100.0 | Threshold: 10.0
+==================================================
 
+--- PHASE 1: Heavy Attack Wave ---
+[STATE SHIFT -> STRAINED]: Threat (70.0) exceeded 50% of current stability. System absorbed 21.0 damage. Remaining stability: 79.0.
+
+--- PHASE 2: System Regeneration Cycle 1 ---
+[STATE SHIFT -> BALANCED]: Restored +15.0 stability. Equilibrium restored (94.0/100.0).
+
+--- PHASE 3: System Regeneration Cycle 2 ---
+[RECOVERY EXECUTED]: Restored +6.0 stability. Current stability: 100.0/100.0 (BALANCED).
+
+--- PHASE 4: Critical Overwhelming Attack ---
+[STATE SHIFT -> COLLAPSED]: Threat (110.0) reduced equilibrium to -10.0, breaching threshold (10.0). Total structural failure. Stability annihilated.
+
+--- PHASE 5: Recovery Attempt Post-Collapse ---
+[RECOVERY FAILED]: System is COLLAPSED. Internal self-healing is offline.
+
+==================================================
+SIMULATION COMPLETE | Final State: COLLAPSED | Final Stability: 0.0/100.0
+==================================================
+
+>>> OPERATOR SUMMARY: State=COLLAPSED | Stability=0.0/100.0
+
+Chatgpt 
+
+Yes. **That output is exactly consistent with the code you supplied.** There isn't an execution anomaly here.
+ 
+The important thing is that the output exposes several behaviors of your model very cleanly.
+ 
+### State trajectory
+ 
+  
+ 
+Phase
+ 
+Event
+ 
+Stability before
+ 
+Result
+ 
+Stability after
+ 
+   
+ 
+Initial
+ 
+—
+ 
+100
+ 
+BALANCED
+ 
+100
+ 
+ 
+ 
+1
+ 
+Attack 70
+ 
+100
+ 
+STRAINED
+ 
+79
+ 
+ 
+ 
+2
+ 
+Recover +15
+ 
+79
+ 
+**BALANCED**
+ 
+94
+ 
+ 
+ 
+3
+ 
+Recover +15
+ 
+94
+ 
+BALANCED
+ 
+**100**
+ 
+ 
+ 
+4
+ 
+Attack 110
+ 
+100
+ 
+**COLLAPSED**
+ 
+0
+ 
+ 
+ 
+5
+ 
+Recover +20
+ 
+0
+ 
+Recovery rejected
+ 
+0
+ 
+  
+ 
+The interesting part is **Phase 3**.
+ 
+You requested:
+ `recovery_rate = 15 ` 
+but the output says:
+ `Restored +6.0 stability. Current stability: 100.0/100.0 ` 
+That's correct because:
+ \[ 94+15=109 \] 
+but your ceiling is:
+ \[ S_{\max}=100 \] 
+so the implementation performs:
+ \[ S_{\text{new}}=\min(100,94+15)=100 \] 
+and therefore:
+ \[ \Delta S_{\text{actual}}=100-94=6 \] 
+So the engine correctly distinguishes **requested recovery** from **actual recovery achieved**.
+ 
+That is a good feature of this version.
+  
+### The more interesting behavior is Phase 2
+ 
+After the first attack:
+ \[ 100-70=30 \] 
+The system doesn't actually set stability to 30 because your model says the attack only causes **30% of threat magnitude as structural damage**:
+ \[ D=70(0.3)=21 \] 
+Therefore:
+ \[ S=100-21=79 \] 
+Then recovery:
+ \[ 79+15=94 \] 
+and because:
+ \[ 94\geq 100(0.8)=80 \] 
+the state transitions:
+ `STRAINED → BALANCED ` 
+So your `recovery_balance_threshold` is functioning exactly as designed.
+  
+### Then Phase 4 demonstrates the terminal boundary
+ 
+At the beginning of Phase 4:
+ \[ S=100 \] 
+Attack:
+ \[ T=110 \] 
+Net equilibrium:
+ \[ E=S-T \] \[ E=100-110=-10 \] 
+Collapse threshold:
+ \[ C=10 \] 
+Since:
+ \[ -10 < 10 \] 
+the system collapses.
+ 
+And importantly, **the recovery module doesn't resurrect it**:
+ `COLLAPSED    ↓ recovery +20 COLLAPSED ` 
+because:
+ `if self.system_state == "COLLAPSED":     return "[RECOVERY FAILED]..." ` 
+So the terminal lock is working.
+  
+## One warning I would now elevate
+ 
+There's a subtle distinction between your **narrative claim** and your **mathematical model**.
+ 
+Your comments repeatedly describe the attack damage as:
+ 
+ 
+“permanently scars structure”
+ 
+ 
+But your recovery mechanism can subsequently restore the `stability` variable to **100/100**.
+ 
+So currently:
+ \[ \text{stability} \neq \text{irreversible structural integrity} \] 
+unless you explicitly define stability as *recoverable operational capacity*.
+ 
+If you want the model to represent actual permanent damage, you'd eventually want something more like:
+ \[ \boxed{ \text{Structural Integrity} \neq \text{Operational Stability} } \] 
+For example, an attack could produce:
+ `Structural integrity: 100 → 79 Operational stability: 100 → 79 ` 
+and recovery might produce:
+ `Structural integrity: 79 Operational stability: 79 → 94 → 100 ` 
+Then you could have a system that **looks fully operational while carrying irreversible damage**.
+ 
+That's a much deeper model.
+ 
+### And one thing your output proves
+ 
+Your progression is no longer just producing fancy logs.
+ 
+You've now got a genuine state-transition system:
+ \[ \boxed{ BALANCED \leftrightarrow STRAINED \rightarrow COLLAPSED } \] 
+with recovery:
+ \[ STRAINED \xrightarrow{\text{adequate recovery}} BALANCED \] 
+and a terminal condition:
+ \[ COLLAPSED \xrightarrow{\text{anything}} COLLAPSED \] 
+That means the next test shouldn't simply be **"does it run?"**
+ 
+It should be **"does the model behave correctly under adversarial edge cases?"**
+ 
+That's where this starts becoming an actual dynamics-engine evaluation rather than an output-generation exercise.
+
+Chatgpt 
+
+Yes — this is the next logical experiment after the multi-wave version: you have now introduced an explicit recovery operator rather than treating degradation as permanently one-way.
+
+For the exact demonstration scenario, the expected state trajectory is:
+
+INITIAL
+Stability = 100
+State = BALANCED
+
+PHASE 1 — Attack 70
+100 - 70 = 30 > threshold 10
+70 > 50% of 100
+
+→ STRAINED
+Damage = 70 × 0.3 = 21
+Stability = 79
+
+PHASE 2 — Recovery +15
+79 + 15 = 94
+94 >= 80% of 100
+
+→ BALANCED
+Stability = 94
+
+PHASE 3 — Recovery +15
+94 + 15 = 109 → capped at 100
+
+→ BALANCED
+Stability = 100
+
+PHASE 4 — Attack 110
+100 - 110 = -10 < threshold 10
+
+→ COLLAPSED
+Stability = 0
+
+PHASE 5 — Recovery +20
+Collapsed lock engages
+
+→ RECOVERY FAILED
+Stability = 0
+
+So the final result should be:
+
+Final State: COLLAPSED
+Final Stability: 0.0/100.0
+
+The important difference from v2
+
+You have changed the system from:
+
+Threat → degradation → eventual collapse
+
+to:
+
+Threat → degradation → recovery → possible rebalance → further threat
+
+That is a materially different dynamical model.
+
+And there is one particularly interesting consequence:
+
+> The system can completely recover its numerical stability without necessarily representing permanent structural repair.
+
+
+
+For example:
+
+100
+↓ attack 70
+79
+↓ recover 15
+94
+↓ recover 15
+100
+
+Your model considers that equivalent to returning to its original capacity.
+
+That is mathematically valid if stability means recoverable operational capacity.
+
+But it is not valid if stability is supposed to represent irreversible structural integrity.
+
+That's the main epistemic warning I'd attach to this version.
+
+Warnings I would record
+
+1. Architectural warning — stability and structural integrity are now conflated.
+
+Your comments still describe:
+
+> “irreversible structural degradation”
+
+
+
+but recover_stability() can restore stability all the way to max_stability.
+
+Those two concepts should probably become separate variables if you want a physically richer model:
+
+operational_capacity
+structural_integrity
+
+Recovery could restore operational capacity while structural damage remains.
+
+
+---
+
+2. Model-policy warning — recovery is currently additive and instantaneous.
+
+self.stability = min(
+    self.max_stability,
+    self.stability + recovery_rate
+)
+
+This means recovery of +15 has exactly the same effect regardless of whether the system is at 20, 50, or 99.
+
+That's a deliberate policy, not a discovered property of resilience.
+
+
+---
+
+3. Numerical warning — your validation is not yet robust to floating-point edge cases.
+
+The code accepts values such as:
+
+float("nan")
+float("inf")
+
+and bool is technically accepted because Python considers:
+
+isinstance(True, int)
+
+to be True.
+
+For a GRIMWARE-style numerical engine, I'd flag this explicitly rather than silently accepting it.
+
+
+---
+
+4. Documentation inconsistency
+
+Your Gravity Check says:
+
+> “If a delay is negative, it is treated as zero”
+
+
+
+That is what the implementation does, because:
+
+if delay > 0:
+    time.sleep(delay)
+
+But this is different from your earlier simulator, where negative delay was rejected.
+
+That's not necessarily wrong. It's simply a policy change that should be intentional and recorded.
+
+
+---
+
+Most important conceptual transition
+
+I think this version is actually more interesting than the previous one because you have introduced a second force:
+
+\[
+\text{Net dynamics}
+=
+\text{adversarial pressure}
+-
+\text{restorative capacity}
+\]
+
+Now the engine can investigate questions that the previous version could not:
+
+\[
+\text{Can recovery outpace attack?}
+\]
+
+\[
+\text{How much recovery is required to cross back into BALANCED?}
+\]
+
+\[
+\text{Can repeated attacks create collapse despite recovery?}
+\]
+
+\[
+\text{Can a system oscillate indefinitely between BALANCED and STRAINED?}
+\]
+
+And eventually, the really interesting question:
+
+\[
+\boxed{\text{What happens when recovery itself depends on accumulated damage?}}
+\]
+
+That would be a genuinely new layer rather than merely adding another method.
