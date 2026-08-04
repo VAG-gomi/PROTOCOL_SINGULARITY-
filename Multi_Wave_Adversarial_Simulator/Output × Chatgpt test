@@ -244,3 +244,212 @@ This artifact has enough genuine issues that I'd first give Kimi the opportunity
 If Kimi's next response independently identifies the same NaN, parameter-domain, lifecycle, and stochastic-reproducibility issues, that is interesting evidence about the strength of the independent audit.
 And if Kimi doesn't identify them, that's equally useful—you've found something for the human auditor to challenge Kimi on.
 So send me Kimi's actual audit/reasoning for this version next, rather than another corrected version. That lets us compare Kimi's independent engineering judgment vs. my audit vs. your human audit without contaminating the process.
+
+`User`
+
+But Output correct
+
+`chatgpt`
+
+Yes — and this particular output is internally correct for the supplied code and random sequence.
+
+Let's manually reconstruct it:
+
+Wave 1
+
+Initial:
+
+Stability = 100.0
+Threat = 20.8
+Threshold = 10
+Strain ratio = 0.5
+
+Equilibrium:
+
+100.0 - 20.8 = 79.2
+
+79.2 ≥ 10, so no collapse.
+
+Strain test:
+
+20.8 > 100 × 0.5
+20.8 > 50
+FALSE
+
+Therefore:
+
+BALANCED
+Stability = 100.0
+
+✅ Output correct.
+
+
+---
+
+Wave 2
+
+Threat = 51.3
+Stability = 100
+
+Equilibrium:
+
+100 - 51.3 = 48.7
+
+48.7 ≥ 10 → no collapse.
+
+Strain:
+
+51.3 > 50
+TRUE
+
+Damage:
+
+51.3 × 0.3 = 15.39
+
+Rounded for display:
+
+15.4
+
+New stability:
+
+100 - 15.39 = 84.61
+
+Displayed:
+
+84.6
+
+✅ Output correct.
+
+
+---
+
+Wave 3
+
+Now the important part: it uses the degraded 84.61, not the original 100.
+
+Threat = 74.1
+Stability = 84.61
+
+Equilibrium:
+
+84.61 - 74.1 = 10.51
+
+10.51 ≥ 10 → doesn't collapse yet.
+
+Strain:
+
+74.1 > 84.61 × 0.5
+74.1 > 42.305
+TRUE
+
+Damage:
+
+74.1 × 0.3 = 22.23
+
+New stability:
+
+84.61 - 22.23 = 62.38
+
+Displayed:
+
+62.4
+
+✅ Output correct.
+
+
+---
+
+Wave 4
+
+Now:
+
+Stability = 62.38
+Threat = 59.6
+
+Equilibrium:
+
+62.38 - 59.6 = 2.78
+
+Displayed:
+
+2.8
+
+And:
+
+2.78 < 10
+
+Therefore:
+
+COLLAPSED
+Stability = 0.0
+
+The simulator then sees:
+
+self.system.system_state == "COLLAPSED"
+
+and breaks the loop.
+
+Therefore:
+
+Waves 5–7 never occur.
+
+✅ Exactly correct.
+
+
+---
+
+There's something particularly useful demonstrated here
+
+The output shows the temporal behavior you wanted:
+
+100.0
+  │
+  │ 20.8 → BALANCED
+  │
+  ├─────────────── 100.0
+  │
+  │ 51.3 → STRAINED
+  │
+  ├─────────────── 84.6
+  │
+  │ 74.1 → STRAINED
+  │
+  ├─────────────── 62.4
+  │
+  │ 59.6 → COLLAPSE
+  ▼
+  0.0
+
+Notice something subtle:
+
+Wave 4 doesn't need to be larger than the original system stability.
+
+The threat is only 59.6, while the original stability was 100.
+
+Yet the system collapses because previous waves permanently damaged it.
+
+That's the actual value of the multi-wave extension.
+
+The sequence demonstrates:
+
+> Repeated individually survivable stressors can alter the system's state until a later stressor becomes catastrophic.
+
+
+
+That's a meaningful emergent property of your current model.
+
+So for this specific output:
+
+Execution correctness: ✅ PASS
+
+Cumulative degradation: ✅ Demonstrated
+
+Terminal halt: ✅ Demonstrated
+
+Audit trail: ✅ Demonstrated
+
+But this still doesn't validate whether the model's 30% damage law, 50% strain boundary, safety threshold of 10, or uniform threat distribution correspond to reality.
+
+That's the next layer of your experiment.
+
+So I wouldn't alter the code because of this output. The run itself is behaving exactly as the specification says it should.
