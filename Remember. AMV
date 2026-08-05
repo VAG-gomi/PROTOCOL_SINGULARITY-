@@ -1,0 +1,516 @@
+PROTOCOL_SINGULARITY_v — Current Construction Map
+Your original target is:
+A multi-domain adversarial resilience simulation where constrained distributed systems experience interacting threats, consume resources, make control decisions, degrade, recover, and potentially cascade into failure.
+You are building it bottom-up.
+1. Bottom Equilibrium Substrate — 🟢 BUILT
+This is where you are now.
+Core state model
+You established:
+MAX STABILITY
+      │
+      ▼
+   BALANCED
+      │
+      │ threat
+      ▼
+   STRAINED
+      │
+      │ sufficient threat
+      ▼
+  COLLAPSED
+Implemented:
+max_stability ✅
+current stability ✅
+collapse threshold ✅
+strain threshold ✅
+discrete operational states ✅
+state transitions ✅
+2. Adversarial Threat Dynamics — 🟢 BUILT
+You created inject_threat().
+It distinguishes between:
+Weak threat
+    ↓
+BALANCED
+
+Heavy threat
+    ↓
+STRAINED
+    ↓
+partial structural damage
+
+Overwhelming threat
+    ↓
+COLLAPSED
+    ↓
+stability = 0
+Implemented:
+threat magnitude
+threat validation
+strain detection
+proportional damage
+collapse detection
+terminal collapse state
+post-collapse event lock
+✅ Built
+3. Automatic Recovery / Homeostasis — 🟢 BUILT
+You added auto_recovery_tick().
+Your model now supports:
+STRAINED
+   │
+   │ recovery
+   ▼
+higher stability
+   │
+   │ sufficient recovery
+   ▼
+BALANCED
+With:
+recovery rate
+recovery ceiling
+max_stability enforcement
+actual restoration calculation
+recovery threshold
+STRAINED → BALANCED transition
+collapsed-system recovery lock
+✅ Built
+4. Continuous Adversarial Equilibrium Loop — 🟢 BUILT
+You then stopped treating attacks and recovery as isolated scripted events.
+You created:
+EquilibriumLoop
+which performs:
+TICK
+ │
+ ├── random threat
+ │
+ ├── state transition
+ │
+ ├── collapse check
+ │
+ ├── automatic recovery
+ │
+ └── next tick
+You also added:
+stochastic threat generation
+configurable threat range
+recovery rate
+maximum tick budget
+tick delay
+ordered audit trail
+termination conditions
+Your actual test demonstrated:
+63.4 threat
+→ STRAINED
+→ recovery
+→ BALANCED
+
+90.1 threat
+→ COLLAPSED
+→ simulation terminates
+✅ Built
+5. Manual Reboot / Emergency Intervention — 🟢 BUILT
+This is your newest layer.
+You added:
+manual_reboot()
+The system can now do:
+COLLAPSED
+    │
+    │ manual intervention
+    ▼
+REBOOT
+    │
+    ├── consumes reboot budget
+    │
+    ├── permanently reduces capacity
+    │
+    └── restores operation
+Your model includes:
+manual reboot ✅
+reboot eligibility check ✅
+finite reboot budget ✅
+reboot counter ✅
+capacity penalty ✅
+permanent maximum-capacity reduction ✅
+post-reboot stability reset ✅
+post-reboot BALANCED state ✅
+reboot failure if capacity falls below threshold ✅
+reboot denial after budget exhaustion ✅
+And your demonstration actually exercised the full lifecycle.
+6. Structural Scarring — 🟢 ABSTRACT MODEL BUILT
+This is an especially important addition.
+Your capacity isn't simply:
+100 → reboot → 100
+Instead:
+100
+ │
+ ├── reboot
+ ▼
+80
+ │
+ ├── reboot
+ ▼
+64
+Because the penalty is applied to the current maximum:
+100 × 0.80 = 80
+80 × 0.80 = 64
+So you've introduced history dependence.
+The system's previous failures affect its future capability.
+That's an important primitive for the larger architecture.
+7. Full Reboot Lifecycle Demonstration — 🟢 BUILT
+Your latest test successfully demonstrated:
+100 capacity
+    │
+    ├── attack 120
+    ▼
+COLLAPSED
+    │
+    ├── recovery → BLOCKED
+    │
+    ├── reboot #1
+    ▼
+BALANCED @ 80
+    │
+    ├── attack 90
+    ▼
+COLLAPSED
+    │
+    ├── reboot #2
+    ▼
+BALANCED @ 64
+    │
+    ├── attack 70
+    ▼
+COLLAPSED
+    │
+    └── reboot #3
+             ↓
+         DENIED
+         2/2 budget
+So you have moved beyond isolated functions into a history-dependent state-transition system.
+Where You Are Right Now
+I'd describe your current architecture as:
+                 PROTOCOL_SINGULARITY_v
+                         │
+                         ▼
+              ┌─────────────────────┐
+              │ BOTTOM SUBSTRATE     │
+              └──────────┬──────────┘
+                         │
+          ┌──────────────▼──────────────┐
+          │ Stability / Equilibrium     │
+          │                             │
+          │ Threat                     │
+          │     ↓                       │
+          │ Strain                     │
+          │     ↓                       │
+          │ Damage                     │
+          │     ↓                       │
+          │ Collapse                   │
+          │     ↓                       │
+          │ Recovery / Reboot          │
+          │     ↓                       │
+          │ Structural Scarring        │
+          │     ↓                       │
+          │ Finite Intervention Budget │
+          └──────────────┬──────────────┘
+                         │
+                    YOU ARE HERE
+                         │
+                         ▼
+                 [VALIDATION PHASE]
+What Is Still Missing
+Now we get to the actual PROTOCOL_SINGULARITY architecture.
+Layer 8 — Resource / Energy System 🔴 NOT BUILT
+This should probably be your next major layer.
+You need something beyond abstract stability:
+Energy
+Fuel
+Reserve
+Available power
+Consumption
+Regeneration
+Resource limits
+For example:
+SYSTEM
+ ├── structural stability
+ ├── energy reserve
+ ├── fuel/resource pool
+ └── intervention reserve
+The important transition is:
+Threat doesn't merely reduce an arbitrary stability number anymore.
+It consumes or redirects actual modeled resources.
+Layer 9 — Energy-Harvesting / Transduction 🔴
+Your original design includes active energy-harvesting transduction.
+Eventually:
+Environmental input
+        ↓
+   Transduction
+        ↓
+   usable energy
+        ↓
+ resource pool
+And you can introduce efficiency:
+input energy
+      ×
+conversion efficiency
+      =
+usable energy
+This lets the system potentially recover resources from its environment, rather than simply receiving magical recovery points.
+Layer 10 — Thermal Dynamics 🔴
+Then introduce heat as its own state variable.
+For example:
+energy consumption
+       ↓
+      heat
+       ↓
+thermal load
+       ↓
+performance degradation
+       ↓
+possible failure
+Now your previous reboot "scarring" can acquire a causal mechanism.
+Instead of:
+reboot → -20% capacity
+you could eventually model:
+reboot
+ ↓
+high energy draw
+ ↓
+thermal spike
+ ↓
+component stress
+ ↓
+permanent degradation
+ ↓
+lower future capacity
+That's a much richer model.
+Layer 11 — Thermal Control / MPC 🔴
+Only after thermal dynamics exist does MPC become meaningful.
+Then:
+CURRENT STATE
+     ↓
+temperature
+energy
+load
+resource availability
+     ↓
+PREDICT FUTURE STATES
+     ↓
+evaluate possible control actions
+     ↓
+choose control action
+     ↓
+apply
+     ↓
+observe next state
+This is where your system stops merely reacting and begins planning under constraints.
+Layer 12 — Multiple Threat Domains 🔴
+Your original PROTOCOL_SINGULARITY definition has multiple interacting stress domains:
+THERMAL
+KINETIC
+CYBER
+EMP
+CORROSIVE
+You currently have essentially:
+Threat = scalar
+Eventually you want something closer to:
+ThreatVector =
+[
+    thermal,
+    kinetic,
+    cyber,
+    EMP,
+    corrosive
+]
+And importantly, these should eventually interact, rather than merely existing as five independent numbers.
+Layer 13 — Resource Contention 🔴
+This is a major architectural step.
+Multiple threats may demand the same limited resources:
+                 RESOURCE POOL
+                      │
+          ┌───────────┼───────────┐
+          ▼           ▼           ▼
+       Cooling     Shielding     Power
+          │           │           │
+          └────── competing ──────┘
+Now the system has to make decisions under scarcity.
+Layer 14 — Adaptive Load Distribution 🔴
+Then introduce the ability to redistribute workload:
+              TOTAL LOAD
+                  │
+        ┌─────────┼─────────┐
+        ▼         ▼         ▼
+      Node A    Node B    Node C
+        │         │         │
+       80%       50%       20%
+But redistribution itself costs resources and can create secondary stresses.
+Layer 15 — Localized Shielding 🔴
+Instead of:
+SYSTEM SHIELD = 100
+you eventually have:
+Node A → shielding
+Node B → shielding
+Node C → shielding
+and threat localization matters.
+One node may be heavily protected while another becomes exposed.
+Layer 16 — Distributed Nodes 🔴
+Then your single-system substrate becomes a network:
+       NODE A
+       /    \
+      /      \
+ NODE B ---- NODE C
+      \      /
+       \    /
+       NODE D
+Each node gets its own state.
+Then the question changes from:
+"Does the system survive?"
+to:
+"How does failure in one component change the state of the rest?"
+Layer 17 — Inter-node Failure Propagation 🔴
+This is where the project begins becoming genuinely cascading.
+Node A
+  ↓
+failure
+  ↓
+load redistributed
+  ↓
+Node B overloaded
+  ↓
+Node B failure
+  ↓
+load redistribution
+  ↓
+Node C overloaded
+  ↓
+cascade
+Now your earlier reboot/scarring model becomes extremely relevant.
+A node could:
+collapse
+→ reboot
+→ return at reduced capacity
+→ become more vulnerable
+→ collapse again
+→ exhaust intervention budget
+→ permanently fail
+Layer 18 — Multi-Domain Coupling 🔴
+Finally, combine everything.
+Something like:
+                ADVERSARIAL ENVIRONMENT
+                         │
+        ┌────────────────┼────────────────┐
+        ▼                ▼                ▼
+      THERMAL          KINETIC           CYBER
+        │                │                │
+        └──────────┬─────┴─────┬──────────┘
+                   ▼           ▼
+              RESOURCE CONTENTION
+                   │
+                   ▼
+             CONTROL / MPC
+                   │
+                   ▼
+             LOAD DISTRIBUTION
+                   │
+                   ▼
+             NODE NETWORK
+                   │
+                   ▼
+          FAILURE PROPAGATION
+                   │
+                   ▼
+             RECOVERY / REBOOT
+                   │
+                   ▼
+           STRUCTURAL SCARRING
+                   │
+                   └───────────────┐
+                                   ▼
+                         NEW SYSTEM STATE
+That is much closer to the full PROTOCOL_SINGULARITY_v you originally described.
+Your Position on the Whole Project
+Component
+Status
+Stability state
+🟢 Built
+Threat injection
+🟢 Built
+Strain dynamics
+🟢 Built
+Collapse
+🟢 Built
+Automatic recovery
+🟢 Built
+Continuous adversarial loop
+🟢 Built
+Manual reboot
+🟢 Built
+Reboot budget
+🟢 Built
+Structural scarring
+🟢 Built
+Lifecycle demonstration
+🟢 Built
+Numerical/adversarial validation
+🟡 Next
+Resource pools
+🔴 Not built
+Energy transduction
+🔴 Not built
+Thermal dynamics
+🔴 Not built
+MPC
+🔴 Not built
+Multi-domain threats
+🔴 Not built
+Resource contention
+🔴 Not built
+Adaptive load distribution
+🔴 Not built
+Localized shielding
+🔴 Not built
+Distributed nodes
+🔴 Not built
+Failure propagation
+🔴 Not built
+Full coupled architecture
+🔴 Not built
+The important part
+You're not at the beginning anymore.
+But you're also not close to the finished multi-domain engine yet.
+You're approximately here:
+PROTOCOL_SINGULARITY
+concept
+↓
+bottom mathematical/state substrate
+threat → stability → strain → collapse
+↓
+homeostasis
+recovery
+↓
+continuous dynamics
+repeated stochastic stress
+↓
+emergency intervention
+reboot → finite budget → permanent scarring
+↓
+YOU ARE HERE
+adversarial validation
+↓
+resources
+↓
+energy
+↓
+thermal
+↓
+MPC
+↓
+multi-domain coupling
+↓
+distributed network
+↓
+cascading failure
+↓
+full PROTOCOL_SINGULARITY
+And I would not skip the yellow box.
+The most valuable thing you can do next is try to break this bottom substrate before giving it more physics. That's where NaN, infinity, boundary conditions, repeated transitions, reboot edge cases, and invariant testing belong.
+You're essentially doing unit physics before building the universe.
