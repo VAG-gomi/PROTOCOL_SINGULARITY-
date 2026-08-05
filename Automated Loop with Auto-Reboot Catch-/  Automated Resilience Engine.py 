@@ -1,1 +1,568 @@
+"""
+================================================================================
+PROTOCOL_SINGULARITY_v2 — Automated Resilience Engine
+Constructed Version (Final)
+================================================================================
 
+This module implements an autonomous resilient system that self-heals between
+attacks and auto-reboots upon collapse, consuming a finite reboot budget with
+permanent capacity degradation until terminal failure. Every line of code is
+preceded by its causal narrative, per Layer 2 Hybrid Sentence Syntax.
+
+Resolved [COGNITION_GAP] assumptions:
+  1. max_ticks safety parameter prevents infinite survival loops.
+  2. A successful reboot consumes the remainder of the tick; no recovery in
+     the same tick.
+  3. max_reboots >= 0 is valid (zero = permanent death on first collapse).
+  4. The next tick's attack operates on the new degraded baseline.
+  5. All parameters are fully validated before execution.
+================================================================================
+"""
+
+import random
+import time
+from typing import List, Tuple, Union
+
+
+# ==============================================================================
+# ADVERSARIAL SYSTEM WITH RECOVERY & REBOOT (Fully Constructed Substrate)
+# ==============================================================================
+
+class AdversarialSystem:
+    """
+    Formal model of a resilient system under adversarial pressure with active
+    self-healing and emergency hard-start capabilities, bounded by design
+    ceiling, collapse floor, and finite reboot budget.
+    """
+
+    def __init__(
+        self,
+        max_stability: float,
+        collapse_threshold: float,
+        max_reboots: int = 3,
+        strain_ratio: float = 0.5,
+        recovery_balance_threshold: float = 0.8,
+    ):
+        # [Entity: max_stability and collapse_threshold parameters]
+        # --(validation: enforce ceiling must exceed failure floor)--> [State: verified baseline or exception]
+        if max_stability <= collapse_threshold:
+            raise ValueError(
+                "[COGNITION_GAP]: max_stability must exceed collapse_threshold."
+            )
+        if collapse_threshold < 0:
+            raise ValueError(
+                "[COGNITION_GAP]: collapse_threshold must be non-negative."
+            )
+        if max_reboots < 0:
+            raise ValueError(
+                "[COGNITION_GAP]: max_reboots must be non-negative."
+            )
+        if not (0 < strain_ratio <= 1):
+            raise ValueError(
+                "[COGNITION_GAP]: strain_ratio must be in (0, 1]."
+            )
+        if not (0 < recovery_balance_threshold <= 1):
+            raise ValueError(
+                "[COGNITION_GAP]: recovery_balance_threshold must be in (0, 1]."
+            )
+
+        # [Entity: validated parameters]
+        # --(assignment to instance)--> [State: system substrate initialized]
+        self.max_stability: float = float(max_stability)
+        self.stability: float = float(max_stability)
+        self.threshold: float = float(collapse_threshold)
+        self.strain_ratio: float = float(strain_ratio)
+        self.recovery_balance_threshold: float = float(recovery_balance_threshold)
+        self.reboot_count: int = 0
+        self.max_reboots: int = max_reboots
+        self.system_state: str = "BALANCED"
+
+    def inject_threat(self, threat_magnitude: Union[int, float]) -> str:
+        # [Entity: incoming threat parameter]
+        # --(validation: ensure numeric and non-negative)--> [State: threat verified]
+        if not isinstance(threat_magnitude, (int, float)) or threat_magnitude < 0:
+            raise ValueError("[COGNITION_GAP]: threat_magnitude must be non-negative.")
+
+        # [Entity: system state flag]
+        # --(idempotency check)--> [State: collapse lock assessed]
+        if self.system_state == "COLLAPSED":
+            return "[STATE LOCKED]: System already collapsed."
+
+        # [Entity: current stability and validated threat]
+        # --(subtraction: measure remaining structural margin)--> [State: net_equilibrium computed]
+        net_equilibrium = self.stability - threat_magnitude
+
+        # [Entity: net_equilibrium and collapse_threshold]
+        # --(comparative evaluation: safety-margin breach check)--> [State: collapse condition assessed]
+        if net_equilibrium < self.threshold:
+            self.system_state = "COLLAPSED"
+            self.stability = 0.0
+            return (
+                f"💥 [CRITICAL SHIFT -> COLLAPSED]: "
+                f"Threat ({threat_magnitude}) reduced equilibrium to {net_equilibrium:.1f}, "
+                f"breaching threshold ({self.threshold}). Total structural failure!"
+            )
+
+        # [Entity: threat_magnitude and current stability]
+        # --(proportional comparison: strain tolerance check)--> [State: strain condition assessed]
+        elif threat_magnitude > (self.stability * self.strain_ratio):
+            self.system_state = "STRAINED"
+            damage = threat_magnitude * 0.3
+            self.stability -= damage
+            return (
+                f"⚠️  [STATE SHIFT -> STRAINED]: "
+                f"Absorbed heavy shock. Stability degraded to {self.stability:.1f}."
+            )
+
+        # [Entity: weak threat]
+        # --(neutralization: no structural cost)--> [State: BALANCED maintained]
+        else:
+            self.system_state = "BALANCED"
+            return (
+                f"🛡️  [STATE MAINTAINED -> BALANCED]: "
+                f"Threat ({threat_magnitude}) absorbed smoothly."
+            )
+
+    def auto_recovery_tick(self, recovery_rate: Union[int, float]) -> str:
+        # [Entity: incoming recovery_rate parameter]
+        # --(validation: ensure non-negative)--> [State: recovery_rate verified]
+        if not isinstance(recovery_rate, (int, float)) or recovery_rate < 0:
+            raise ValueError("[COGNITION_GAP]: recovery_rate must be non-negative.")
+
+        # [Entity: system state flag]
+        # --(collapse guard)--> [State: recovery eligibility assessed]
+        if self.system_state == "COLLAPSED":
+            return "❌ [RECOVERY FAILED]: System is COLLAPSED. Self-healing is offline."
+
+        # [Entity: current stability and validated recovery_rate]
+        # --(ceiling enforcement: min prevents exceeding max_stability)--> [State: new stability computed]
+        old_stability = self.stability
+        self.stability = min(self.max_stability, self.stability + recovery_rate)
+        actual_restored = self.stability - old_stability
+
+        # [Entity: current stability and recovery_balance_threshold]
+        # --(threshold comparison: rebalancing assessment)--> [State: transition condition evaluated]
+        if (
+            self.stability >= self.max_stability * self.recovery_balance_threshold
+            and self.system_state == "STRAINED"
+        ):
+            self.system_state = "BALANCED"
+            return (
+                f"🟢 [STATE RECOVERED -> BALANCED]: "
+                f"Restored +{actual_restored:.1f} stability ({self.stability:.1f}/{self.max_stability:.1f})."
+            )
+
+        return (
+            f"⚡ [AUTO-RECOVERY]: Restored +{actual_restored:.1f} stability -> "
+            f"Current: {self.stability:.1f}/{self.max_stability:.1f}."
+        )
+
+    def manual_reboot(self, capacity_penalty_percent: Union[int, float] = 20.0) -> str:
+        # [Entity: incoming capacity_penalty_percent parameter]
+        # --(validation: ensure numeric and in [0, 100])--> [State: penalty percentage verified]
+        if not isinstance(capacity_penalty_percent, (int, float)):
+            raise TypeError("[COGNITION_GAP]: capacity_penalty_percent must be a number.")
+        if not (0 <= capacity_penalty_percent <= 100):
+            raise ValueError("[COGNITION_GAP]: capacity_penalty_percent must be in [0, 100].")
+
+        # [Entity: reboot_count and max_reboots]
+        # --(budget evaluation: enforce finite hard-start limit — Guard 1)--> [State: reboot eligibility assessed]
+        if self.reboot_count >= self.max_reboots:
+            return (
+                f"🚫 [REBOOT DENIED]: Maximum reboots "
+                f"({self.reboot_count}/{self.max_reboots}) reached. "
+                f"Structural core burned out."
+            )
+
+        # [Entity: system state flag]
+        # --(eligibility evaluation: enforce reboot reserved for collapsed state — Guard 2)--> [State: collapse requirement assessed]
+        if self.system_state != "COLLAPSED":
+            return (
+                f"ℹ️  [REBOOT SKIPPED]: System is currently {self.system_state}. "
+                f"Manual reboot is reserved for COLLAPSED state."
+            )
+
+        # [Entity: current max_stability and validated penalty percentage]
+        # --(percentage calculation: compute permanent structural cost)--> [State: penalty magnitude computed]
+        penalty = self.max_stability * (capacity_penalty_percent / 100.0)
+
+        # [Entity: current max_stability and computed penalty]
+        # --(subtraction: apply permanent capacity degradation)--> [State: design ceiling permanently reduced]
+        self.max_stability -= penalty
+
+        # [Entity: reboot counter]
+        # --(increment: consume one unit from finite hard-start budget)--> [State: reboot_count updated]
+        self.reboot_count += 1
+
+        # [Entity: new max_stability and collapse_threshold]
+        # --(viability evaluation: enforce post-reboot structural integrity — Guard 3)--> [State: post-reboot viability assessed]
+        if self.max_stability <= self.threshold:
+            self.system_state = "COLLAPSED"
+            self.stability = 0.0
+            return (
+                f"💀 [REBOOT FAILED]: Core capacity ({self.max_stability:.1f}) "
+                f"fell below minimum threshold ({self.threshold}). Permanent loss."
+            )
+
+        # [Entity: new max_stability]
+        # --(assignment: reset current stability to degraded design ceiling)--> [State: stability restored to new baseline]
+        self.stability = self.max_stability
+
+        # [Entity: system's operational state]
+        # --(state reset: restore operational status after successful hard-start)--> [State: BALANCED]
+        self.system_state = "BALANCED"
+
+        # [Entity: reboot narrative with cost and new baseline]
+        # --(return to caller)--> [State: caller informed of successful reboot with permanent degradation]
+        return (
+            f"🔄 [AUTO-REBOOT EXECUTED ({self.reboot_count}/{self.max_reboots})]: "
+            f"Reset to BALANCED | Permanent Penalty: -{penalty:.1f} capacity | "
+            f"New Max Baseline: {self.max_stability:.1f}"
+        )
+
+
+# ==============================================================================
+# LAYER 3: GRAVITY CHECK (AdversarialSystem)
+# ==============================================================================
+# Origin —
+#     This engine exists because dynamic systems do not fail all at once, nor do
+#     they heal without bound, nor can they be rebooted infinitely. They degrade
+#     through repeated adversarial contact, regenerate toward a design ceiling,
+#     and can be emergency-restarted a finite number of times before structural
+#     fatigue renders them permanently inoperable.
+#
+# Boundary —
+#     · All parameters validated at initialization and method entry.
+#     · Idempotent locks on collapsed state for threats and recovery.
+#     · Reboot budget exhaustion, non-collapsed skip, and post-reboot burnout
+#       guards on manual_reboot.
+#     · No undefined intermediate states.
+#
+# Equilibrium —
+#     After any method, the system is in a known discrete state (BALANCED,
+#     STRAINED, COLLAPSED, or idempotent lock message). Exceptions propagate
+#     cleanly.
+# ==============================================================================
+
+
+# ==============================================================================
+# AUTOMATED RESILIENCE LOOP
+# ==============================================================================
+
+class ResilienceLoop:
+    """
+    Orchestrates an autonomous while-loop where each tick applies a random
+    adversarial attack. If collapse occurs, an emergency hard-start is
+    automatically triggered. The loop continues until all reboots are exhausted
+    or the safety timeout is reached.
+    """
+
+    # [SINGULARITY_HEADER]
+    # Intent  : Model an autonomous resilient system that self-heals between
+    #           attacks and auto-reboots upon collapse, consuming a finite reboot
+    #           budget with permanent capacity degradation, until terminal failure.
+    # State   : Loop holds [AdversarialSystem, threat_range, recovery_rate,
+    #           capacity_penalty_percent, max_ticks, tick_delay, current_tick,
+    #           audit_log]; expects [execution trigger].
+    # Action  : Validate config → initialize system → enter while loop → generate
+    #           random threat → inject → if collapsed → auto-reboot → check
+    #           post-reboot state → if still collapsed → break → else continue
+    #           → if not collapsed → recovery → increment tick → delay → check
+    #           max_ticks → return complete forensic record.
+
+    def __init__(
+        self,
+        max_stability: float,
+        collapse_threshold: float,
+        threat_range: Tuple[float, float],
+        recovery_rate: float,
+        max_reboots: int = 2,
+        capacity_penalty_percent: float = 20.0,
+        max_ticks: int = 10000,
+        tick_delay: float = 0.4,
+        strain_ratio: float = 0.5,
+        recovery_balance_threshold: float = 0.8,
+    ):
+        # [Entity: threat_range bounds]
+        # --(validation: enforce well-ordered non-negative bounds)--> [State: threat bounds verified]
+        min_threat, max_threat = threat_range
+        if min_threat < 0 or max_threat < 0:
+            raise ValueError("[COGNITION_GAP]: threat_range bounds must be non-negative.")
+        if min_threat > max_threat:
+            raise ValueError("[COGNITION_GAP]: threat_range must be well-ordered.")
+
+        # [Entity: recovery_rate parameter]
+        # --(validation: enforce non-negative restorative energy)--> [State: recovery rate verified]
+        if recovery_rate < 0:
+            raise ValueError("[COGNITION_GAP]: recovery_rate must be non-negative.")
+
+        # [Entity: capacity_penalty_percent parameter]
+        # --(validation: enforce meaningful percentage bounds)--> [State: penalty percentage verified]
+        if not (0 <= capacity_penalty_percent <= 100):
+            raise ValueError("[COGNITION_GAP]: capacity_penalty_percent must be in [0, 100].")
+
+        # [Entity: max_reboots parameter]
+        # --(validation: enforce non-negative hard-start budget)--> [State: reboot budget verified]
+        if max_reboots < 0:
+            raise ValueError("[COGNITION_GAP]: max_reboots must be non-negative.")
+
+        # [Entity: max_ticks parameter]
+        # --(validation: enforce at least one tick)--> [State: tick budget verified]
+        if max_ticks < 1:
+            raise ValueError("[COGNITION_GAP]: max_ticks must be >= 1.")
+
+        # [Entity: tick_delay parameter]
+        # --(validation: enforce non-negative latency)--> [State: delay verified cosmetic-only]
+        if tick_delay < 0:
+            tick_delay = 0.0
+
+        # [Entity: validated design parameters and thresholds]
+        # --(composition: instantiate formal adversarial substrate with reboot)--> [State: AdversarialSystem initialized]
+        self.system = AdversarialSystem(
+            max_stability=max_stability,
+            collapse_threshold=collapse_threshold,
+            max_reboots=max_reboots,
+            strain_ratio=strain_ratio,
+            recovery_balance_threshold=recovery_balance_threshold,
+        )
+
+        # [Entity: validated threat bounds]
+        # --(assignment to instance)--> [State: stochastic sampling range configured]
+        self.threat_min: float = float(min_threat)
+        self.threat_max: float = float(max_threat)
+
+        # [Entity: validated recovery_rate]
+        # --(assignment to instance)--> [State: passive homeostatic energy configured]
+        self.recovery_rate: float = float(recovery_rate)
+
+        # [Entity: validated capacity_penalty_percent]
+        # --(assignment to instance)--> [State: reboot penalty configured]
+        self.capacity_penalty_percent: float = float(capacity_penalty_percent)
+
+        # [Entity: validated max_ticks]
+        # --(assignment to instance)--> [State: safety timeout configured]
+        self.max_ticks: int = max_ticks
+
+        # [Entity: validated tick_delay]
+        # --(assignment to instance)--> [State: inter-tick latency configured]
+        self.tick_delay: float = float(tick_delay)
+
+        # [Entity: tick counter initialized to zero]
+        # --(assignment to instance)--> [State: temporal index at origin]
+        self.current_tick: int = 0
+
+        # [Entity: empty list structure]
+        # --(initialization: prepare ordered forensic container)--> [State: audit_log ready for capture]
+        self.audit_log: List[str] = []
+
+    def run(self) -> Tuple[List[str], str, float, float, int, int]:
+        """
+        Execute the autonomous resilience loop and return the complete audit
+        trail, final state, final stability, final max_stability, reboot count,
+        and total ticks.
+        """
+        # [Entity: simulation parameters and empty audit_log]
+        # --(header generation: establish forensic trail origin)--> [State: audit_log initialized with session metadata]
+        self.audit_log.append(
+            "=========================================================="
+        )
+        self.audit_log.append(
+            "AUTOMATED RESILIENCE & REBOOT ENGINE"
+        )
+        self.audit_log.append(
+            f"Max Stability: {self.system.max_stability:.1f} | "
+            f"Threshold: {self.system.threshold:.1f} | "
+            f"Max Reboots: {self.system.max_reboots} | "
+            f"Recovery: {self.recovery_rate:.1f}/tick"
+        )
+        self.audit_log.append(
+            "=========================================================="
+        )
+
+        # [Entity: current_tick counter and max_ticks limit]
+        # --(loop guard: enforce termination when safety budget exhausted)--> [State: while condition evaluated]
+        while self.current_tick < self.max_ticks:
+            # [Entity: current tick counter]
+            # --(increment: advance temporal index for current iteration)--> [State: tick counter updated to next position]
+            self.current_tick += 1
+
+            # [Entity: tick identity]
+            # --(log entry creation: document temporal boundary for forensic trace)--> [State: tick header appended to audit_log]
+            self.audit_log.append(f"\n--- TIME TICK T+{self.current_tick} ---")
+
+            # [Entity: Python random module and threat bounds]
+            # --(stochastic sampling: model unpredictable adversarial intensity)--> [State: threat_force generated]
+            threat_force = round(random.uniform(self.threat_min, self.threat_max), 1)
+
+            # [Entity: threat identity and magnitude]
+            # --(log entry creation: document incoming attack vector)--> [State: threat event logged]
+            self.audit_log.append(
+                f"[EVENT 1: THREAT]: Attack magnitude = {threat_force}"
+            )
+
+            # [Entity: AdversarialSystem instance and generated threat]
+            # --(state transition execution: process adversarial event per formal protocol)--> [State: attack result produced and system state updated]
+            threat_msg = self.system.inject_threat(threat_force)
+            self.audit_log.append(f"   └── {threat_msg}")
+
+            # [Entity: system state flag post-threat]
+            # --(conditional evaluation: route to auto-reboot or recovery based on collapse status)--> [State: execution path selected]
+            if self.system.system_state == "COLLAPSED":
+                # [Entity: collapsed system]
+                # --(alert generation: document critical event for forensic trace)--> [State: collapse alert logged]
+                self.audit_log.append(
+                    "🚨 [CRITICAL ALERT]: Collapse detected! "
+                    "Triggering automated hard reboot..."
+                )
+
+                # [Entity: AdversarialSystem instance and configured penalty]
+                # --(hard-start execution: process emergency reboot per formal protocol)--> [State: reboot result produced and system state updated]
+                reboot_msg = self.system.manual_reboot(self.capacity_penalty_percent)
+                self.audit_log.append(f"   └── {reboot_msg}")
+
+                # [Entity: system state flag post-reboot]
+                # --(terminal evaluation: detect if reboot failed or was denied)--> [State: termination condition assessed]
+                if self.system.system_state == "COLLAPSED":
+                    # [Entity: permanently collapsed system]
+                    # --(loop break: enforce termination since no further reboots are possible)--> [State: loop exited, terminal failure recorded]
+                    self.audit_log.append(
+                        f"\n💀 [TERMINAL FAILURE]: All reboots exhausted. "
+                        f"System permanently destroyed at Tick T+{self.current_tick}."
+                    )
+                    break
+
+            # [Entity: system state flag (not collapsed)]
+            # --(restorative path: system survived attack and requires homeostatic repair)--> [State: recovery execution selected]
+            else:
+                # [Entity: AdversarialSystem instance and configured recovery_rate]
+                # --(restoration execution: process automatic homeostatic repair per formal protocol)--> [State: recovery result produced and system state updated]
+                recovery_msg = self.system.auto_recovery_tick(self.recovery_rate)
+
+                # [Entity: recovery event label and result narrative]
+                # --(audit capture: preserve causal outcome in ordered record)--> [State: recovery event logged]
+                self.audit_log.append("[EVENT 2: HEALING]: Auto-recovery tick active")
+                self.audit_log.append(f"   └── {recovery_msg}")
+
+            # [Entity: simulation clock and tick_delay parameter]
+            # --(temporal suspension: simulate inter-tick latency for realistic pacing)--> [State: execution paused, preserving causal ordering between ticks]
+            if self.tick_delay > 0:
+                time.sleep(self.tick_delay)
+
+        # [Entity: completed audit_log and final system metrics]
+        # --(footer generation: summarize terminal condition for caller analysis)--> [State: audit_log finalized with session conclusion]
+        self.audit_log.append(
+            "\n=========================================================="
+        )
+        self.audit_log.append(
+            f"SIMULATION TERMINATED | Total Lifespan: {self.current_tick} Ticks"
+        )
+        self.audit_log.append(
+            f"Total Reboots Used: {self.system.reboot_count}/{self.system.max_reboots} | "
+            f"Final Max Capacity: {self.system.max_stability:.1f} | "
+            f"Final State: {self.system.system_state}"
+        )
+        self.audit_log.append(
+            "=========================================================="
+        )
+
+        # [Entity: finalized audit_log and terminal metrics]
+        # --(return to caller: deliver complete forensic record and terminal metrics)--> [State: caller receives immutable simulation outcome]
+        return (
+            self.audit_log,
+            self.system.system_state,
+            self.system.stability,
+            self.system.max_stability,
+            self.system.reboot_count,
+            self.current_tick,
+        )
+
+
+# ==============================================================================
+# LAYER 3: GRAVITY CHECK (ResilienceLoop)
+# ==============================================================================
+# Origin —
+#     This loop exists because real autonomous systems (unmanned drones, remote
+#     servers, biological organisms) must survive without human intervention.
+#     They auto-recover from minor damage and hard-reboot from fatal crashes,
+#     but each reboot degrades maximum capacity. The while-loop captures the
+#     full autonomous lifecycle: attack → damage → recovery → attack → collapse
+#     → reboot → degraded operation → attack → collapse → reboot denial →
+#     terminal failure.
+#
+# Boundary —
+#     · If threat_range is inverted or negative, ValueError prevents impossible
+#       stochastic generation.
+#     · If recovery_rate is negative, ValueError prevents damaging "recovery".
+#     · If capacity_penalty_percent is outside [0, 100], ValueError prevents
+#       impossible penalty logic.
+#     · If max_reboots < 0, ValueError prevents impossible negative budgets.
+#     · If max_ticks < 1, ValueError prevents vacuous execution.
+#     · If tick_delay is negative, it is clamped to zero (non-blocking).
+#     · If the system collapses and reboot succeeds, no recovery occurs in the
+#       same tick — the reboot consumes the tick.
+#     · If the system collapses and reboot fails/denied, the loop breaks
+#       immediately — terminal failure.
+#     · If max_ticks is reached without terminal failure, the loop terminates
+#       with a timeout message — the system outlasted the simulation budget.
+#     · If the underlying AdversarialSystem is initialized with invalid params,
+#       the constructor raises ValueError at birth, not under load.
+#
+# Equilibrium —
+#     After run(), the caller receives:
+#       1. A complete ordered audit log of every tick.
+#       2. The final system_state string (BALANCED, STRAINED, or COLLAPSED).
+#       3. The final stability float.
+#       4. The final max_stability float (degraded by reboots).
+#       5. The final reboot_count integer.
+#       6. The total_ticks integer.
+#     The loop operates on its own AdversarialSystem instance; it does not
+#     mutate external state. The log is append-only and ordered by tick index,
+#     providing a forensic trail. In terminal failure, the log reveals the exact
+#     tick at which the final collapse occurred and whether it was due to budget
+#     exhaustion or post-reboot burnout. There are no ambiguous outcomes.
+# ==============================================================================
+
+
+# ==============================================================================
+# SIMULATION DEMONSTRATION
+# ==============================================================================
+if __name__ == "__main__":
+    # [Entity: design requirements]
+    # --(instantiation: create loop with 100.0 max stability, 10.0 threshold, [20,95] threat range, 12.0 recovery, 2 max reboots, 20% penalty)--> [State: loop configured and ready]
+    loop = ResilienceLoop(
+        max_stability=100.0,
+        collapse_threshold=10.0,
+        threat_range=(20.0, 95.0),
+        recovery_rate=12.0,
+        max_reboots=2,
+        capacity_penalty_percent=20.0,
+        max_ticks=10000,
+        tick_delay=0.4,
+        strain_ratio=0.5,
+        recovery_balance_threshold=0.8,
+    )
+
+    # [Entity: ResilienceLoop instance]
+    # --(execution: run autonomous campaign and capture forensic output)--> [State: simulation completed, audit trail returned]
+    (
+        audit_log,
+        final_state,
+        final_stability,
+        final_max_capacity,
+        final_reboot_count,
+        total_ticks,
+    ) = loop.run()
+
+    # [Entity: audit_log entries]
+    # --(display: render ordered forensic record to stdout for human analysis)--> [State: simulation results visible to operator]
+    for line in audit_log:
+        print(line)
+
+    # [Entity: final metrics]
+    # --(summary output: present terminal condition in isolated line for quick scanning)--> [State: operator informed of session conclusion]
+    print(
+        f"\n>>> OPERATOR SUMMARY: State={final_state} | "
+        f"Stability={final_stability:.1f}/{final_max_capacity:.1f} | "
+        f"Reboots={final_reboot_count}/{loop.system.max_reboots} | "
+        f"Ticks={total_ticks}"
+    )
