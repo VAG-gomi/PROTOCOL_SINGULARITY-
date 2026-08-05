@@ -1,252 +1,143 @@
-----------------------------------------------------
-Why i get pleasant at creating simulations with patience 🤔
+# PROTOCOL_SINGULARITY
 
-(Chatgpt) 
+[![Python 3.x](https://img.shields.io/badge/python-3.x-blue.svg)](https://www.python.org/)
+[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-brightgreen.svg)](LICENSE)
+[![Status: Active Development](https://img.shields.io/badge/status-active%20development-yellow.svg)](#)
 
-Probably because **simulation gives your mind a very particular kind of satisfaction: you can turn an abstract idea into something that behaves predictably under rules you designed.**
- 
-And your recent work shows that pretty clearly.
- 
-You didn't just write:
- 
- 
-“A system can collapse and recover.”
- 
- 
-You built a tiny universe where:
- 
-**threat → state transition → damage → recovery → collapse → intervention → permanent degradation**
- 
-Then you deliberately watched it run through the entire lifecycle.
- 
-That can be pleasant for several reasons:
- 
- 
-- **Control:** the rules are explicit. You can change one variable and observe what follows.
- 
-- **Causality:** simulations let you see *why* something happened rather than merely describing the outcome.
- 
-- **Patience has immediate feedback:** unlike studying something abstract for hours, each test eventually produces an observable state.
- 
-- **Complexity becomes manageable:** you can start with one system and progressively add resources, thermal dynamics, nodes, etc.
- 
-- **Discovery:** even when you designed the rules, execution can reveal consequences you didn't intuit beforehand.
- 
-- **Iteration feels meaningful:** fixing one invariant and rerunning the simulation gives you a concrete sense of progress.
- 
+A simulation framework for **modeling and stress-testing system resilience under adversarial pressure**, including degradation, recovery, collapse, reboot, and irreversible capacity loss.
 
- 
-There's also something important about **patience** here.
- 
-You're not necessarily enjoying *waiting*. You're enjoying **letting the system reveal itself without prematurely forcing the next layer**.
- 
-That's exactly what you've been doing with PROTOCOL_SINGULARITY:
- 
- 
-“Don't build the whole universe yet. Make the little system survive first.”
- 
- 
-And that's a very engineering-oriented form of patience.
- 
-The interesting part is that you previously seemed eager to jump toward the larger architecture—MPC, thermal systems, distributed nodes, coupled domains. Yet now you're getting satisfaction from something much smaller:
- 
-**one state machine, one invariant, one test, one observation at a time.**
- 
-That isn't strange. It may simply mean you've discovered that **the construction process itself is rewarding to you**, not just the finished PROTOCOL_SINGULARITY system.
-----------------------------------------------------
+PROTOCOL_SINGULARITY is being developed **bottom-up** toward a larger multi-domain framework for studying resource contention, coupled failures, and distributed resilience.
 
-PROTOCOL_SINGULARITY_v
+---
 
-PROTOCOL_SINGULARITY_v is a simulation framework for studying multi-domain adversarial resilience, active energy-harvesting transduction, model predictive thermal control (MPC), and resource-constrained cascading network dynamics.
+## 🎯 Overview
 
-The framework models distributed cluster environments subjected to interacting stress domains, including thermal, kinetic, cyber, electromagnetic-pulse (EMP), and corrosive stresses.
+PROTOCOL_SINGULARITY simulates systems subjected to stochastic adversarial threats and models how they respond through:
 
-Its architecture represents:
+- **Threat injection** → degradation of system stability
+- **Recovery mechanisms** → active restoration
+- **Collapse thresholds** → system failure boundaries
+- **Reboot/intervention** → recovery from critical states
+- **Irreversible capacity loss** → permanent degradation
 
-- real-time threat-state parsing
-- adaptive load distribution
-- localized shielding
-- power-gated resource and fuel pools
-- thermal control through MPC
-- inter-node failure propagation and cascading dynamics
+Current implementation focuses on the **foundational scalar resilience layer**, with planned expansion to multi-domain stress (thermal, kinetic, cyber, EMP, corrosive) and distributed network topologies.
 
-The project is designed to investigate how constrained distributed systems behave when multiple stressors interact simultaneously, with particular emphasis on resource contention, control decisions, failure propagation, and system resilience.
+---
 
-«Status: See the project documentation and validation results for the current implementation maturity and verified capabilities.»
+## ⚡ Quick Start
 
-(chatgpt)
+### Requirements
+- **Python 3.x**
+- **No external dependencies** — uses only Python standard library (`random`, `statistics`, `dataclasses`, `typing`, `time`)
+- **No API keys or external services required**
 
-Yes — you are still working under the PROTOCOL_SINGULARITY_v project lineage, but the important distinction is what layer of the project you are currently implementing.
+### Installation & Execution
 
-Your current progression is roughly:
+```bash
+# Clone the repository
+git clone https://github.com/VAG-gomi/PROTOCOL_SINGULARITY-.git
+cd PROTOCOL_SINGULARITY-
 
-PROTOCOL_SINGULARITY_v → AdversarialSystem → Threat + Recovery → PhaseSimulator → Automated Equilibrium Loop
+# Run a simulation directly
+python3 <simulation_module>.py
+```
 
-The code you just showed is therefore not a different project. It is an evolution of the same adversarial-resilience idea.
+**That's it!** All simulations execute standalone with Python's built-in libraries.
 
-However, there is a major architectural distinction:
+---
 
-PROTOCOL_SINGULARITY_v target architecture	Current implementation
+## 📁 Project Structure
 
-Multi-domain stress	❌ Single scalar threat
-Thermal stress	❌
-Kinetic stress	❌
-Cyber stress	❌
-EMP stress	❌
-Corrosive stress	❌
-Active energy-harvesting transduction	❌
-MPC thermal control	❌
-Distributed cluster	❌ Single system
-Adaptive load distribution	❌
-Localized shielding	❌
-Power/fuel pools	❌
-Inter-node failure propagation	❌
-Cascading network dynamics	❌
-Threat → degradation	✅
-Recovery/homeostasis	✅
-Collapse threshold	✅
-Resource ceiling concept	Partially
-Stochastic adversarial events	✅
-Temporal simulation	✅
-Audit/forensic trace	✅
+```
+PROTOCOL_SINGULARITY-/
+├── Adversarial_Dynamic_engine/           # Core adversarial system logic
+├── Automated_Equilibrium_Engine/         # Equilibrium state management
+├── Automated_Loop_with_Auto-Reboot_Catch/# Auto-recovery mechanisms
+├── Manual_Reboot_Engine/                 # Manual intervention strategies
+├── Multi_Wave_Adversarial_Simulator/     # Multi-phase threat campaigns
+├── Rare_Structural_Repair_Module/        # Irreversible capacity recovery
+├── threat_recovery_simulation_constructed/# Integrated threat-recovery simulations
+├── multi-run_benchmark/                  # Batch testing & statistical analysis
+├── README.md                             # This file
+└── LICENSE                               # AGPL-3.0 License
+```
 
+---
 
-So what are you actually doing right now?
+## 🔬 Current Implementation Status
 
-You're building the mathematical/behavioral substrate beneath the larger PROTOCOL_SINGULARITY_v architecture.
+| Feature | Status |
+|---------|--------|
+| Scalar threat-response dynamics | ✅ Implemented |
+| Stability state machine (BALANCED → STRAINED → DEAD) | ✅ Implemented |
+| Stochastic threat injection | ✅ Implemented |
+| Recovery/homeostasis mechanisms | ✅ Implemented |
+| Collapse threshold detection | ✅ Implemented |
+| Audit/forensic trace logging | ✅ Implemented |
+| **Multi-domain stress coupling** | 🔄 Planned |
+| **Resource contention modeling** | 🔄 Planned |
+| **Distributed node topology** | 🔄 Planned |
+| **Model Predictive Control (MPC)** | 🔄 Planned |
 
-The progression makes sense:
+---
 
-Scalar resilience
-      ↓
-Threat / recovery dynamics
-      ↓
-Phase-based adversarial campaigns
-      ↓
-Continuous stochastic equilibrium
-      ↓
-Multi-domain stress
-      ↓
-Resource contention
-      ↓
-Distributed nodes
-      ↓
-Failure propagation
-      ↓
-MPC / control decisions
-      ↓
-Full PROTOCOL_SINGULARITY_v
+## 💡 Design Philosophy
 
-Your latest output demonstrates something genuinely useful for that trajectory:
+PROTOCOL_SINGULARITY follows a **bottom-up construction approach**:
 
-Threat
-  ↓
-Stability degradation
-  ↓
-Recovery
-  ↓
-Rebalancing
-  ↓
-Next stochastic threat
-  ↓
-Collapse
+1. **Foundation**: Scalar resilience dynamics (current layer)
+2. **Escalation**: Multi-domain stress interactions
+3. **Distribution**: Resource contention across nodes
+4. **Control**: Model predictive decision-making
+5. **Integration**: Full multi-domain resilience system
 
-For example, your run established:
+This allows for rigorous validation at each level before adding architectural complexity.
 
-T+1
-63.4 threat
-→ stability 100 → 81
-→ +12 recovery
-→ 93
-→ BALANCED
+---
 
-T+2
-90.1 threat
-→ 93 - 90.1 = 2.9
-→ 2.9 < collapse threshold 10
-→ COLLAPSED
+## 📊 Example Simulation Output
 
-That's a scalar resilience model, not yet the full multi-domain system.
+```
+T+1  Threat: 63.4
+     Stability: 100 → 81
+     Recovery: +12 → 93
+     State: BALANCED
 
-And this distinction is important because you don't want to accidentally claim:
+T+2  Threat: 90.1
+     Stability: 93 - 90.1 = 2.9
+     Collapse Threshold: 10
+     → COLLAPSED
+```
 
-> "PROTOCOL_SINGULARITY_v is now a multi-domain MPC cascading network simulator."
+---
 
+## 📚 Documentation
 
+See the project directories for detailed documentation and validation results for current implementation maturity and verified capabilities.
 
-It isn't yet.
+---
 
-A more accurate project status would be:
+## 📝 Why Simulations?
 
-> PROTOCOL_SINGULARITY_v — foundational adversarial equilibrium layer implemented and experimentally validated; multi-domain coupling, resource contention, distributed topology, MPC control, energy transduction, and cascading propagation remain unimplemented.
+> Simulations are pleasant because they transform abstract ideas into systems that behave predictably under designed rules. You can observe causality, test hypotheses, discover unintended consequences, and iterate meaningfully.
 
+PROTOCOL_SINGULARITY is built on this principle: **understand system behavior through controlled simulation before scaling to production.**
 
+---
 
-So yes, you're still doing PROTOCOL_SINGULARITY_v — you're currently constructing its lower-level resilience dynamics rather than its final architecture.
+## 📖 License
 
-(chatgpt)
+This project is licensed under the **GNU Affero General Public License v3.0** (AGPL-3.0).
+See [LICENSE](LICENSE) for details.
 
-Exactly. You're building PROTOCOL_SINGULARITY_v from the bottom loop upward.
+---
 
-Think of the architecture as a stack:
+## 🚀 Getting Involved
 
-PROTOCOL_SINGULARITY_v
-                         ▲
-              Full multi-domain system
-                         │
-          ┌──────────────┴──────────────┐
-          │  Distributed / Network      │
-          │  cascading failure          │
-          ├─────────────────────────────┤
-          │  Resource contention        │
-          │  power / fuel / shielding   │
-          ├─────────────────────────────┤
-          │  Control layer              │
-          │  MPC / adaptive decisions   │
-          ├─────────────────────────────┤
-          │  Multi-domain stress        │
-          │  thermal / cyber / EMP etc. │
-          ├─────────────────────────────┤
-          │  Equilibrium dynamics       │
-          │  attack → recovery → attack │  ← YOU ARE HERE
-          ├─────────────────────────────┤
-          │  Stability state machine    │
-          │  BALANCED / STRAINED / DEAD │
-          └─────────────────────────────┘
-                         │
-                         ▼
-                   Bottom loop
+- **Issues & Feature Requests**: [GitHub Issues](https://github.com/VAG-gomi/PROTOCOL_SINGULARITY-/issues)
+- **Questions?** Start with the module documentation in each directory.
 
-And your latest experiment is essentially:
+---
 
-Threat → state transition → degradation → recovery → stochastic next threat → collapse/survival.
+**Status**: Active development | **Current Focus**: Validating foundational resilience layer
 
-That's a good foundation because later you can replace the single scalar:
-
-stability = 93
-
-with something closer to:
-
-Node A:
-    thermal = ...
-    kinetic = ...
-    cyber = ...
-    EMP = ...
-    corrosion = ...
-
-Node B:
-    thermal = ...
-    ...
-
-Resources:
-    power = ...
-    fuel = ...
-    shielding = ...
-
-Then the simple bottom loop becomes the local dynamics inside each node, and the higher layers can coordinate those nodes.
-
-One warning, though: don't rush upward yet. Your current loop still has assumptions that need to be stress-tested—especially the 30% damage rule, the strain threshold, recovery threshold, collapse criterion, stochastic distribution, and the fact that recovery is completely disabled after collapse.
-
-Those aren't necessarily errors. They're model-policy choices that need validation before you build more architecture on top of them.
-
-So yes: bottom-up construction is exactly what you're doing.
