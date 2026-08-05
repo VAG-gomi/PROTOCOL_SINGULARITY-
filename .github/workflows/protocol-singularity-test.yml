@@ -1,0 +1,106 @@
+name: PROTOCOL_SINGULARITY Runtime Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  runtime-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify Python
+        run: python --version
+
+      - name: Compile all Python files
+        run: python -m compileall -q .
+
+      - name: Run PROTOCOL_SINGULARITY smoke test (Rare Structural Repair Module)
+        run: |
+          python - <<'PY'
+          import sys
+          import importlib.util
+          from pathlib import Path
+          
+          print("=" * 70)
+          print("PROTOCOL_SINGULARITY RUNTIME TEST")
+          print("Testing: Rare Structural Repair Module-/ Rare Structural Repair Module.py")
+          print("=" * 70)
+          
+          # Load the module
+          module_path = Path("Rare Structural Repair Module-/ Rare Structural Repair Module.py")
+          
+          if not module_path.exists():
+              raise FileNotFoundError(f"Module not found at {module_path}")
+          
+          print(f"\n[1/6] Loading module from: {module_path}")
+          spec = importlib.util.spec_from_file_location(
+              "protocol_singularity_repair",
+              str(module_path)
+          )
+          
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          print("✅ Module imported successfully")
+          
+          # Verify AdversarialSystem class exists
+          print(f"\n[2/6] Verifying AdversarialSystem class exists")
+          if not hasattr(module, "AdversarialSystem"):
+              raise AssertionError("AdversarialSystem class not found in module")
+          print("✅ AdversarialSystem class found")
+          
+          # Test 1: Initialization
+          print(f"\n[3/6] Testing initialization")
+          system = module.AdversarialSystem(
+              max_stability=100.0,
+              collapse_threshold=10.0,
+              max_reboots=2
+          )
+          
+          assert system.system_state == "BALANCED", f"Expected BALANCED, got {system.system_state}"
+          assert system.stability == 100.0, f"Expected stability=100.0, got {system.stability}"
+          assert system.max_stability == 100.0, f"Expected max_stability=100.0, got {system.max_stability}"
+          assert system.reboot_count == 0, f"Expected reboot_count=0, got {system.reboot_count}"
+          print("✅ Initial state test PASSED")
+          print(f"   State: {system.system_state}")
+          print(f"   Stability: {system.stability}/{system.max_stability}")
+          print(f"   Reboot count: {system.reboot_count}/{system.max_reboots}")
+          
+          # Test 2: Threat injection (minor threat)
+          print(f"\n[4/6] Testing threat injection (minor threat=20.0)")
+          result = system.inject_threat(20.0)
+          print(f"   Output: {result}")
+          assert system.system_state != "COLLAPSED", "System should not collapse from minor threat"
+          assert system.stability <= 100.0, "Stability should not exceed maximum"
+          print("✅ Threat injection test PASSED")
+          
+          # Test 3: Recovery
+          print(f"\n[5/6] Testing recovery (auto_recovery_tick=12.0)")
+          result = system.auto_recovery_tick(12.0)
+          print(f"   Output: {result}")
+          assert system.stability <= system.max_stability, "Stability should not exceed max_stability"
+          print("✅ Recovery test PASSED")
+          
+          # Test 4: Collapse detection
+          print(f"\n[6/6] Testing collapse detection (overwhelming threat=1000.0)")
+          system.inject_threat(1000.0)
+          assert system.system_state == "COLLAPSED", f"Expected COLLAPSED, got {system.system_state}"
+          assert system.stability == 0.0, f"Expected stability=0.0 after collapse, got {system.stability}"
+          print("✅ Collapse detection test PASSED")
+          print(f"   State: {system.system_state}")
+          print(f"   Stability: {system.stability}")
+          
+          print("\n" + "=" * 70)
+          print("PROTOCOL_SINGULARITY RUNTIME TEST: ALL TESTS PASSED ✅")
+          print("=" * 70)
+          
+          PY
