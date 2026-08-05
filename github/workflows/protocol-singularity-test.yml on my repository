@@ -1,0 +1,118 @@
+name: PROTOCOL_SINGULARITY Runtime Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  runtime-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify Python
+        run: python --version
+
+      - name: Compile all Python files
+        run: python -m compileall -q .
+
+      - name: Run PROTOCOL_SINGULARITY smoke test
+        run: |
+          python - <<'PY'
+          import importlib.util
+          from pathlib import Path
+
+          candidates = [
+              Path("PROTOCOL_SINGULARITY.py"),
+              Path("protocol_singularity.py"),
+              Path("protocol_singularity_v2.py"),
+              Path("PROTOCOL_SINGULARITY_v2.py"),
+          ]
+
+          module_path = next((p for p in candidates if p.exists()), None)
+
+          if module_path is None:
+              raise FileNotFoundError(
+                  "Could not find the PROTOCOL_SINGULARITY Python file. "
+                  "Update the candidates list in this workflow with the actual filename."
+              )
+
+          print(f"Loading module: {module_path}")
+
+          spec = importlib.util.spec_from_file_location(
+              "protocol_singularity",
+              module_path
+          )
+
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+
+          print("Module imported successfully.")
+
+          if not hasattr(module, "AdversarialSystem"):
+              raise AssertionError(
+                  "AdversarialSystem class was not found."
+              )
+
+          system = module.AdversarialSystem(
+              max_stability=100.0,
+              collapse_threshold=10.0,
+              max_reboots=2,
+          )
+
+          assert system.system_state == "BALANCED"
+          assert system.stability == 100.0
+          assert system.max_stability == 100.0
+          assert system.reboot_count == 0
+
+          print("Initial state test: PASS")
+
+          result = system.inject_threat(20.0)
+
+          print(result)
+
+          assert system.system_state != "COLLAPSED"
+          assert system.stability <= 100.0
+
+          print("Threat injection test: PASS")
+
+          recovery_result = system.auto_recovery_tick(12.0)
+
+          print(recovery_result)
+
+          assert system.stability <= system.max_stability
+
+          print("Recovery test: PASS")
+
+          # Force a deterministic collapse.
+          system.inject_threat(1000.0)
+
+          assert system.system_state == "COLLAPSED"
+          assert system.stability == 0.0
+
+          print("Collapse detection test: PASS")
+
+          reboot_result = system.manual_reboot(20.0)
+
+          print(reboot_result)
+
+          assert system.reboot_count == 1
+          assert system.system_state == "BALANCED"
+          assert system.max_stability == 80.0
+          assert system.stability == 80.0
+
+          print("Reboot/degradation test: PASS")
+
+          print("")
+          print("==============================================")
+          print("PROTOCOL_SINGULARITY RUNTIME TEST: PASS")
+          print("==============================================")
+          PY
