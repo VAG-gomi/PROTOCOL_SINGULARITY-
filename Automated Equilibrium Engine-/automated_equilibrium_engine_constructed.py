@@ -1,23 +1,4 @@
 """
-================================================================================
-PROTOCOL_SINGULARITY_v2 — Automated Equilibrium Engine
-Constructed Version (Final)
-================================================================================
-
-This module implements a continuous-time simulation where each tick applies
-both a random adversarial attack and an automatic recovery event, modeling
-open systems under persistent environmental stress with passive homeostasis.
-Every line of code is preceded by its causal narrative, per Layer 2 Hybrid
-Sentence Syntax.
-
-Resolved [COGNITION_GAP] assumptions:
-  1. max_ticks safety parameter prevents infinite loops in degenerate configs.
-  2. threat_range and recovery_rate are configurable with full validation.
-  3. tick_delay is purely cosmetic pacing.
-  4. Ticks are temporally independent Markov events.
-  5. Collapse triggers immediate loop termination; recovery is skipped.
-================================================================================
-"""
 
 import random
 import time
