@@ -1,0 +1,460 @@
+"""
+================================================================================
+PROTOCOL_SINGULARITY_v4 — MONTE CARLO COMPARATIVE BENCHMARK
+Structural Repair OFF vs ON (10 Paired Runs)
+================================================================================
+Every line constructed under v4:
+  Layer 0: Ontological Grounding with tier-tagged assumptions
+  Layer 1: Singularity Header
+  Layer 2: Hybrid Sentence Syntax on every meaningful line
+  Layer 2.5: Execution Gate between [PROBABILISTIC] and [DETERMINISTIC]
+  Layer 3: Gravity Check
+================================================================================
+"""
+
+import random
+from typing import List, Tuple
+
+
+class AdversarialSystem:
+    def __init__(self, max_stability: float, collapse_threshold: float, max_reboots: int):
+        # [Entity: max_stability parameter]
+        # --([DETERMINISTIC] validation: enforce finite positive structural ceiling)-->
+        # [State: verified design capacity or [COGNITION_GAP]]
+        if not isinstance(max_stability, (int, float)) or max_stability <= 0:
+            raise ValueError("[COGNITION_GAP] max_stability must be a positive finite number.")
+
+        # [Entity: collapse_threshold parameter]
+        # --([DETERMINISTIC] validation: enforce non-negative failure floor)-->
+        # [State: verified survival floor or [COGNITION_GAP]]
+        if not isinstance(collapse_threshold, (int, float)) or collapse_threshold < 0:
+            raise ValueError("[COGNITION_GAP] collapse_threshold must be non-negative.")
+
+        # [Entity: max_stability and collapse_threshold]
+        # --([DETERMINISTIC] invariant check: ceiling must strictly exceed floor)-->
+        # [State: verified valid birth state or [COGNITION_GAP]]
+        if max_stability <= collapse_threshold:
+            raise ValueError("[COGNITION_GAP] max_stability must exceed collapse_threshold.")
+
+        # [Entity: max_reboots parameter]
+        # --([DETERMINISTIC] validation: enforce non-negative finite recovery budget)-->
+        # [State: verified reboot budget or [COGNITION_GAP]]
+        if not isinstance(max_reboots, int) or max_reboots < 0:
+            raise ValueError("[COGNITION_GAP] max_reboots must be a non-negative integer.")
+
+        # [Entity: validated max_stability]
+        # --([DETERMINISTIC] immutable anchor assignment: lock original design ceiling)-->
+        # [State: original_max_capacity established as unchanging reference]
+        self.original_max_capacity: float = float(max_stability)
+
+        # [Entity: validated max_stability]
+        # --([DETERMINISTIC] mutable ceiling assignment: current degraded maximum)-->
+        # [State: max_stability baseline initialized to full capacity]
+        self.max_stability: float = float(max_stability)
+
+        # [Entity: max_stability ceiling]
+        # --([DETERMINISTIC] full charge initialization: operational energy at capacity)-->
+        # [State: stability pool at maximum]
+        self.stability: float = float(max_stability)
+
+        # [Entity: validated collapse_threshold]
+        # --([DETERMINISTIC] critical floor assignment: irreversible failure boundary)-->
+        # [State: threshold invariant established]
+        self.threshold: float = float(collapse_threshold)
+
+        # [Entity: healthy birth expectation]
+        # --([DETERMINISTIC] state machine initialization: system begins operational)-->
+        # [State: BALANCED mode active]
+        self.system_state: str = "BALANCED"
+
+        # [Entity: reboot counter]
+        # --([DETERMINISTIC] initialization: zero consumed reboots)-->
+        # [State: reboot_count at origin]
+        self.reboot_count: int = 0
+
+        # [Entity: validated max_reboots]
+        # --([DETERMINISTIC] budget lock: finite recovery limit stored)-->
+        # [State: max_reboots budget established]
+        self.max_reboots: int = max_reboots
+
+    def inject_threat(self, threat_magnitude: float) -> None:
+        # [Entity: threat_magnitude argument]
+        # --([GATE] validation: ensure non-negative finite force)-->
+        # [State: sanitized threat or [COGNITION_GAP]]
+        if not isinstance(threat_magnitude, (int, float)) or threat_magnitude < 0:
+            raise ValueError("[COGNITION_GAP] threat_magnitude must be non-negative.")
+
+        # [Entity: current system_state]
+        # --([DETERMINISTIC] idempotency check: collapsed systems cannot be attacked again)-->
+        # [State: early return if already collapsed, preserving state integrity]
+        if self.system_state == "COLLAPSED":
+            return
+
+        # [Entity: current stability pool and validated threat]
+        # --([DETERMINISTIC] net equilibrium calculation: measure post-impact margin)-->
+        # [State: net_equilibrium computed as structural margin]
+        net_equilibrium = self.stability - threat_magnitude
+
+        # [Entity: net_equilibrium and threshold]
+        # --([DETERMINISTIC] collapse causality: margin below floor triggers total failure)-->
+        # [State: COLLAPSED if boundary breached]
+        if net_equilibrium < self.threshold:
+            self.system_state = "COLLAPSED"
+            self.stability = 0.0
+            return
+
+        # [Entity: threat_magnitude and current stability]
+        # --([DETERMINISTIC] strain ratio check: impact exceeding 50% of capacity causes partial damage)-->
+        # [State: STRAINED with degraded stability if severe, else BALANCED maintained]
+        if threat_magnitude > (self.stability * 0.5):
+            self.system_state = "STRAINED"
+            self.stability -= (threat_magnitude * 0.3)
+        else:
+            self.system_state = "BALANCED"
+
+    def auto_recovery_tick(self, recovery_rate: float) -> None:
+        # [Entity: recovery_rate argument]
+        # --([GATE] validation: ensure non-negative restorative energy)-->
+        # [State: sanitized recovery rate or [COGNITION_GAP]]
+        if not isinstance(recovery_rate, (int, float)) or recovery_rate < 0:
+            raise ValueError("[COGNITION_GAP] recovery_rate must be non-negative.")
+
+        # [Entity: system_state]
+        # --([DETERMINISTIC] operational guard: collapsed systems cannot self-heal)-->
+        # [State: recovery blocked if COLLAPSED]
+        if self.system_state == "COLLAPSED":
+            return
+
+        # [Entity: current stability, recovery_rate, and max_stability ceiling]
+        # --([DETERMINISTIC] capped addition: restore energy without exceeding design ceiling)-->
+        # [State: stability replenished up to max_stability]
+        self.stability = min(self.max_stability, self.stability + recovery_rate)
+
+        # [Entity: current stability and max_stability]
+        # --([DETERMINISTIC] rebalancing threshold check: 80% ceiling with STRAINED state)-->
+        # [State: BALANCED restored if healed sufficiently]
+        if self.stability >= (self.max_stability * 0.8) and self.system_state == "STRAINED":
+            self.system_state = "BALANCED"
+
+    def rare_structural_repair(self, rng: random.Random, chance_percent: float, repair_amount: float) -> bool:
+        # [Entity: chance_percent and repair_amount arguments]
+        # --([GATE] validation: ensure non-negative repair parameters)-->
+        # [State: sanitized parameters or [COGNITION_GAP]]
+        if not isinstance(chance_percent, (int, float)) or chance_percent < 0:
+            raise ValueError("[COGNITION_GAP] chance_percent must be non-negative.")
+        if not isinstance(repair_amount, (int, float)) or repair_amount < 0:
+            raise ValueError("[COGNITION_GAP] repair_amount must be non-negative.")
+
+        # [Entity: system_state]
+        # --([DETERMINISTIC] operational guard: collapsed systems cannot initiate repairs)-->
+        # [State: repair blocked if COLLAPSED]
+        if self.system_state == "COLLAPSED":
+            return False
+
+        # [Entity: max_stability and original_max_capacity]
+        # --([DETERMINISTIC] ceiling completeness check: skip if already at perfect baseline)-->
+        # [State: repair skipped if no degradation exists]
+        if self.max_stability >= self.original_max_capacity:
+            return False
+
+        # [Entity: isolated rng instance and chance_percent]
+        # --([PROBABILISTIC] stochastic roll: generate uniform sample in [0, 100])-->
+        # [State: roll outcome determined]
+        roll = rng.uniform(0.0, 100.0)
+
+        # [Entity: roll outcome and chance_percent threshold]
+        # --([DETERMINISTIC] success evaluation: roll within threshold triggers repair)-->
+        # [State: repair boolean decided]
+        if roll <= chance_percent:
+            # [Entity: current max_stability, repair_amount, and original_max_capacity]
+            # --([DETERMINISTIC] capped ceiling rebuild: restore capacity without exceeding original)-->
+            # [State: max_stability incremented, bounded by original_max_capacity]
+            self.max_stability = min(self.original_max_capacity, self.max_stability + repair_amount)
+            return True
+        return False
+
+    def manual_reboot(self, capacity_penalty_percent: float) -> bool:
+        # [Entity: capacity_penalty_percent argument]
+        # --([GATE] validation: ensure numeric percentage in [0, 100])-->
+        # [State: sanitized penalty or [COGNITION_GAP]]
+        if not isinstance(capacity_penalty_percent, (int, float)):
+            raise TypeError("[COGNITION_GAP] capacity_penalty_percent must be a number.")
+        if not (0 <= capacity_penalty_percent <= 100):
+            raise ValueError("[COGNITION_GAP] capacity_penalty_percent must be in [0, 100].")
+
+        # [Entity: reboot_count and max_reboots]
+        # --([DETERMINISTIC] budget exhaustion guard: enforce finite hard-start limit)-->
+        # [State: reboot denied if budget exhausted]
+        if self.reboot_count >= self.max_reboots:
+            return False
+
+        # [Entity: system_state]
+        # --([DETERMINISTIC] state eligibility guard: reboot reserved for COLLAPSED state only)-->
+        # [State: reboot skipped if not collapsed]
+        if self.system_state != "COLLAPSED":
+            return False
+
+        # [Entity: current max_stability and validated penalty percentage]
+        # --([DETERMINISTIC] structural fatigue calculation: compute permanent capacity cost)-->
+        # [State: penalty magnitude computed]
+        penalty = self.max_stability * (capacity_penalty_percent / 100.0)
+
+        # [Entity: current max_stability and computed penalty]
+        # --([DETERMINISTIC] ceiling reduction: apply permanent structural degradation)-->
+        # [State: design ceiling permanently reduced]
+        self.max_stability -= penalty
+
+        # [Entity: reboot_count]
+        # --([DETERMINISTIC] budget consumption: increment consumed reboot counter)-->
+        # [State: one recovery unit consumed]
+        self.reboot_count += 1
+
+        # [Entity: new max_stability and threshold]
+        # --([DETERMINISTIC] post-reboot viability check: new ceiling must exceed failure floor)-->
+        # [State: COLLAPSED if below threshold, else viable]
+        if self.max_stability <= self.threshold:
+            self.system_state = "COLLAPSED"
+            self.stability = 0.0
+            return False
+
+        # [Entity: viable max_stability]
+        # --([DETERMINISTIC] full charge reset: restore operational energy to degraded ceiling)-->
+        # [State: stability synchronized with new max_stability]
+        self.stability = self.max_stability
+
+        # [Entity: recovered system]
+        # --([DETERMINISTIC] state promotion: restore operational status)-->
+        # [State: BALANCED mode active]
+        self.system_state = "BALANCED"
+        return True
+
+
+def simulate_lifespan(
+    repair_enabled: bool,
+    seed_value: int,
+    max_stability: float = 100.0,
+    collapse_threshold: float = 10.0,
+    max_reboots: int = 2,
+    recovery_rate: float = 12.0,
+    threat_min: float = 25.0,
+    threat_max: float = 95.0,
+    capacity_penalty_percent: float = 25.0,
+    repair_chance: float = 25.0,
+    repair_amount: float = 10.0,
+) -> int:
+    # [Entity: seed_value argument]
+    # --([DETERMINISTIC] validation: ensure integer seed for reproducibility)-->
+    # [State: verified seed or [COGNITION_GAP]]
+    if not isinstance(seed_value, int):
+        raise ValueError("[COGNITION_GAP] seed_value must be an integer for reproducible pairing.")
+
+    # [Entity: threat bounds]
+    # --([DETERMINISTIC] validation: enforce well-ordered non-negative threat range)-->
+    # [State: verified threat bounds or [COGNITION_GAP]]
+    if not (0 <= threat_min <= threat_max):
+        raise ValueError("[COGNITION_GAP] threat_min and threat_max must be well-ordered and non-negative.")
+
+    # [Entity: validated seed_value]
+    # --([DETERMINISTIC] isolated RNG instantiation: create deterministic random stream)-->
+    # [State: seeded rng established, independent of global random state]
+    rng = random.Random(seed_value)
+
+    # [Entity: simulation parameters]
+    # --([DETERMINISTIC] system instantiation: create adversarial substrate)-->
+    # [State: AdversarialSystem at full health ready for simulation]
+    system = AdversarialSystem(
+        max_stability=max_stability,
+        collapse_threshold=collapse_threshold,
+        max_reboots=max_reboots,
+    )
+
+    # [Entity: temporal index]
+    # --([DETERMINISTIC] initialization: tick counter at origin)-->
+    # [State: tick = 0]
+    tick: int = 0
+
+    # [Entity: tick counter and terminal condition]
+    # --([DETERMINISTIC] loop guard: simulate until terminal failure)-->
+    # [State: while condition active, bounded by finite reboot budget]
+    while True:
+        # [Entity: tick counter]
+        # --([DETERMINISTIC] increment: advance discrete time index)-->
+        # [State: tick advanced to next position]
+        tick += 1
+
+        # [Entity: isolated rng and threat bounds]
+        # --([PROBABILISTIC] stochastic threat generation: sample adversarial force from uniform distribution)-->
+        # [State: raw threat candidate generated]
+        raw_threat = rng.uniform(threat_min, threat_max)
+
+        # [Entity: raw threat candidate]
+        # --([DETERMINISTIC] discretization: round to 1 decimal for deterministic precision)-->
+        # [State: threat_force quantized]
+        threat_force = round(raw_threat, 1)
+
+        # [Entity: threat_force and threat bounds]
+        # --([GATE] invariant validation: ensure probabilistic output respects distribution contract)-->
+        # [State: gated threat approved (uniform guarantees bounds, gate confirms contract)]
+        if not (threat_min <= threat_force <= threat_max):
+            raise ValueError("[COGNITION_GAP] Probabilistic threat output breached deterministic invariant bounds.")
+
+        # [Entity: AdversarialSystem and gated threat_force]
+        # --([DETERMINISTIC] threat injection: process attack through state machine)-->
+        # [State: system state potentially shifted to STRAINED or COLLAPSED]
+        system.inject_threat(threat_force)
+
+        # [Entity: system_state post-threat]
+        # --([DETERMINISTIC] collapse branch evaluation: route to reboot or recovery)-->
+        # [State: execution path selected based on collapse status]
+        if system.system_state == "COLLAPSED":
+            # [Entity: collapsed system and penalty configuration]
+            # --([DETERMINISTIC] hard-start attempt: emergency reboot with permanent penalty)-->
+            # [State: reboot success or terminal failure determined]
+            reboot_success = system.manual_reboot(capacity_penalty_percent=capacity_penalty_percent)
+
+            # [Entity: reboot_success boolean]
+            # --([DETERMINISTIC] terminal evaluation: break loop if no recovery possible)-->
+            # [State: loop exited if reboot failed, else continue to next tick]
+            if not reboot_success:
+                break
+        else:
+            # [Entity: active system and recovery_rate]
+            # --([DETERMINISTIC] routine maintenance: execute homeostatic repair tick)-->
+            # [State: stability partially or fully restored, state potentially rebalanced]
+            system.auto_recovery_tick(recovery_rate)
+
+            # [Entity: treatment flag repair_enabled]
+            # --([DETERMINISTIC] conditional branch: decide whether to attempt structural repair)-->
+            # [State: repair path selected if enabled]
+            if repair_enabled:
+                # [Entity: system, rng, and repair parameters]
+                # --([PROBABILISTIC] rare structural audit: probabilistic ceiling restoration attempt)-->
+                # [State: max_stability potentially rebuilt or unchanged]
+                system.rare_structural_repair(
+                    rng=rng,
+                    chance_percent=repair_chance,
+                    repair_amount=repair_amount,
+                )
+
+    # [Entity: accumulated tick count]
+    # --([DETERMINISTIC] lifespan measurement: return total ticks survived until terminal failure)-->
+    # [State: lifespan integer returned to caller]
+    return tick
+
+
+def run_comparative_benchmark(num_runs: int = 10) -> Tuple[List[int], List[int], List[int]]:
+    # [Entity: num_runs argument]
+    # --([GATE] validation: ensure positive integer sample size)-->
+    # [State: verified sample size or [COGNITION_GAP]]
+    if not isinstance(num_runs, int) or num_runs < 1:
+        raise ValueError("[COGNITION_GAP] num_runs must be a positive integer.")
+
+    # [Entity: empty result containers]
+    # --([DETERMINISTIC] initialization: prepare ordered forensic vectors for paired measurements)-->
+    # [State: off_results and on_results lists ready for accumulation]
+    off_results: List[int] = []
+    on_results: List[int] = []
+    seeds: List[int] = []
+
+    # [Entity: benchmark configuration]
+    # --([DETERMINISTIC] base seed assignment: establish reproducible seed sequence)-->
+    # [State: seed_base = 4200 for paired generation]
+    seed_base: int = 4200
+
+    # [Entity: simulation banner strings]
+    # --([DETERMINISTIC] stdout emission: announce benchmark identity and parameters)-->
+    # [State: user informed of benchmark commencement]
+    print("=" * 68)
+    print(f"   MONTE CARLO COMPARATIVE BENCHMARK ({num_runs} PAIRED RUNS)")
+    print("   PROTOCOL_SINGULARITY_v4: Structural Repair OFF vs ON")
+    print("=" * 68)
+    print()
+    print(f"{'Run ID':<8} | {'Repair OFF (Ticks)':<20} | {'Repair ON (Ticks)':<20} | {'Delta Gain':<12}")
+    print("-" * 68)
+
+    # [Entity: run_id iterator from 1 to num_runs]
+    # --([DETERMINISTIC] loop guard: execute exactly num_runs paired comparisons)-->
+    # [State: benchmark loop active for prescribed sample size]
+    for run_id in range(1, num_runs + 1):
+        # [Entity: run_id and seed_base]
+        # --([DETERMINISTIC] paired seed derivation: compute deterministic seed for this run)-->
+        # [State: seed = 4201, 4202, ..., 4210]
+        seed = seed_base + run_id
+
+        # [Entity: seed and treatment flag False]
+        # --([DETERMINISTIC] control simulation: execute baseline without structural repair)-->
+        # [State: ticks_off = lifespan under pure degradation]
+        ticks_off = simulate_lifespan(repair_enabled=False, seed_value=seed)
+
+        # [Entity: seed and treatment flag True]
+        # --([DETERMINISTIC] experimental simulation: execute identical attack sequence WITH repair)-->
+        # [State: ticks_on = lifespan under degradation-plus-restoration]
+        ticks_on = simulate_lifespan(repair_enabled=True, seed_value=seed)
+
+        # [Entity: ticks_off and ticks_on]
+        # --([DETERMINISTIC] paired accumulation: append results to forensic vectors)-->
+        # [State: off_results and on_results extended, seed recorded]
+        off_results.append(ticks_off)
+        on_results.append(ticks_on)
+        seeds.append(seed)
+
+        # [Entity: paired results for this run]
+        # --([DETERMINISTIC] delta computation: measure treatment effect)-->
+        # [State: delta = ticks_on - ticks_off]
+        delta = ticks_on - ticks_off
+
+        # [Entity: delta value]
+        # --([DETERMINISTIC] string formatting: prepare human-readable delta)-->
+        # [State: delta_str formatted with sign]
+        delta_str = f"+{delta} ticks" if delta >= 0 else f"{delta} ticks"
+
+        # [Entity: formatted row data]
+        # --([DETERMINISTIC] stdout emission: report paired result for this run)-->
+        # [State: run result visible to operator]
+        print(f"Run #{run_id:<3} | {ticks_off:<20} | {ticks_on:<20} | {delta_str:<12}")
+
+    # [Entity: off_results vector]
+    # --([DETERMINISTIC] statistical aggregation: compute mean lifespan for control)-->
+    # [State: avg_off = sum(off_results) / num_runs]
+    avg_off = sum(off_results) / len(off_results)
+
+    # [Entity: on_results vector]
+    # --([DETERMINISTIC] statistical aggregation: compute mean lifespan for treatment)-->
+    # [State: avg_on = sum(on_results) / num_runs]
+    avg_on = sum(on_results) / len(on_results)
+
+    # [Entity: avg_off and avg_on]
+    # --([DETERMINISTIC] effect size computation: measure absolute mean extension)-->
+    # [State: avg_gain = avg_on - avg_off]
+    avg_gain = avg_on - avg_off
+
+    # [Entity: avg_gain and avg_off]
+    # --([DETERMINISTIC] relative effect computation: measure percentage improvement)-->
+    # [State: pct_improvement computed, guarded against division by zero]
+    pct_improvement = (avg_gain / avg_off) * 100 if avg_off > 0 else 0.0
+
+    # [Entity: statistical metrics]
+    # --([DETERMINISTIC] summary banner emission: present aggregate results)-->
+    # [State: operator informed of benchmark conclusion]
+    print()
+    print("=" * 68)
+    print("   SUMMARY STATISTICS")
+    print("=" * 68)
+    print(f" • Average Lifespan (Repair OFF) : {avg_off:.2f} Ticks")
+    print(f" • Average Lifespan (Repair ON)  : {avg_on:.2f} Ticks")
+    print(f" • Mean Lifespan Extension       : +{avg_gain:.2f} Ticks (+{pct_improvement:.1f}%)")
+    print(f" • Max Lifespan (OFF vs ON)      : {max(off_results)} vs {max(on_results)} Ticks")
+    print(f" • Min Lifespan (OFF vs ON)      : {min(off_results)} vs {min(on_results)} Ticks")
+    print("=" * 68)
+
+    # [Entity: finalized result vectors and seed list]
+    # --([DETERMINISTIC] return to caller: deliver complete forensic record)-->
+    # [State: caller receives immutable benchmark outcome]
+    return off_results, on_results, seeds
+
+
+# [Entity: script entry point]
+# --([DETERMINISTIC] benchmark execution: launch 10-run paired comparison)-->
+# [State: benchmark running, results captured]
+if __name__ == "__main__":
+    run_comparative_benchmark(num_runs=10)
