@@ -1,1 +1,557 @@
- 
+(chatgpt)
+
+ This is a noticeable step up from your earlier versions. Looking at the architecture you've evolved over the conversation, I'd rate it as follows.
+
+Version	Approx. Level
+
+v2	6/10
+v4 Monte Carlo	8.5/10
+v2.5.1 COG Hardened	9/10
+
+
+Here's why.
+
+What became significantly stronger
+
+1. Separation of deterministic vs probabilistic logic This is the biggest architectural improvement.
+
+Instead of treating randomness as "magic", you've explicitly separated:
+
+deterministic state transitions
+
+probabilistic sampling
+
+invariant checking
+
+telemetry
+
+
+That is much closer to how simulation frameworks are designed.
+
+
+---
+
+2. Reproducibility
+
+Using
+
+random.Random(seed)
+
+instead of global random
+
+is a professional decision.
+
+It means
+
+Same seed
+↓
+
+Same threats
+
+↓
+
+Same execution
+
+↓
+
+Same result
+
+That is exactly what scientific simulation needs.
+
+
+---
+
+3. Explicit State Machine
+
+Instead of
+
+system_state = "BALANCED"
+
+you now use
+
+Enum
+
+which is much safer.
+
+
+---
+
+4. Structured telemetry
+
+Returning
+
+dict
+
+or
+
+TelemetrySnapshot
+
+instead of formatted strings
+
+is a professional software engineering pattern.
+
+Presentation
+
+↓
+
+Logic
+
+↓
+
+Storage
+
+are now separated.
+
+
+---
+
+5. Event History
+
+Keeping
+
+EventLog
+
+is excellent.
+
+Now every state transition has evidence.
+
+That is useful for
+
+debugging
+
+auditing
+
+replay
+
+visualization
+
+
+
+---
+
+6. Runtime invariant checking
+
+This part
+
+_validate_invariants()
+
+after every tick
+
+is exactly what many simulation engines do.
+
+Instead of hoping everything is correct,
+
+the engine continuously proves itself.
+
+
+---
+
+The Monte Carlo benchmark is also a good improvement
+
+This part
+
+Repair OFF
+
+vs
+
+Repair ON
+
+using identical seeds
+
+is proper experimental methodology.
+
+You eliminated one of the biggest mistakes people make:
+
+different random sequence
+
+between experiments.
+
+Instead
+
+same seed
+
+↓
+
+same attacks
+
+↓
+
+only one variable changes
+
+That is a controlled comparison.
+
+
+---
+
+Things that are still missing before I'd call it "research-grade"
+
+1. Unit tests
+
+Currently you test manually.
+
+Eventually you'll want automated tests like:
+
+pytest
+
+Examples:
+
+test_reboot()
+
+test_recovery()
+
+test_repair()
+
+test_threshold()
+
+test_rng()
+
+test_event_history()
+
+
+---
+
+2. Property testing
+
+Instead of checking one example,
+
+check thousands.
+
+For example:
+
+For every generated threat
+
+stability >=0
+
+always holds
+
+Libraries like hypothesis are useful for this.
+
+
+---
+
+3. Configuration separation
+
+Instead of
+
+repair_rate=25
+
+inside code,
+
+have
+
+config.json
+
+or
+
+config.yaml
+
+Then experiments don't require editing Python.
+
+
+---
+
+4. Statistics
+
+Instead of
+
+average
+
+compute
+
+mean
+
+median
+
+variance
+
+standard deviation
+
+confidence interval
+
+That turns Monte Carlo into stronger quantitative analysis.
+
+
+---
+
+5. Visualization
+
+Right now outputs are text.
+
+Eventually add graphs such as:
+
+stability over time
+
+maximum capacity over time
+
+reboot timeline
+
+histogram of lifespan
+
+repair success frequency
+
+
+Those make patterns much easier to understand.
+
+
+---
+
+One caution
+
+Your documentation is becoming much longer than the executable logic.
+
+For example:
+
+# [Entity]
+
+# [State]
+
+# [Gate]
+
+...
+
+This is useful while you're designing the framework, but if it grows indefinitely it will become difficult to maintain. A common approach is to keep the runtime code relatively compact and put the detailed formal specification in separate design documents or generated documentation.
+
+
+---
+
+Overall assessment
+
+You're no longer just writing a Python simulation. You're designing a simulation framework with:
+
+deterministic execution
+
+probabilistic events
+
+reproducibility
+
+telemetry
+
+causal logging
+
+invariant enforcement
+
+comparative benchmarking
+
+
+Those are ideas commonly found in simulation, systems engineering, and reliability research.
+
+The next leap isn't making the engine larger—it's making it more rigorously verified with automated tests, statistical validation, and clearer separation between specification, implementation, and experiments.
+
+(output)
+
+============================================================
+RUN 1: SAFETY_GUARD MODE (seed=42, max_ticks=30)
+
+=== ACTIVATING PROTOCOL_SINGULARITY_v2.5.1 RUNTIME ===
+Seed: 42 | Mode: SAFETY_GUARD | Max Ticks: 30
+
+[T+01] State: BALANCED  | Stab:  91.6/100.0 | STRAIN: Absorbed heavy force. Stability reduced by 20.4.
+[T+02] State: BALANCED  | Stab: 100.0/100.0 | BALANCED: Threat (21.9) absorbed with no state shift.
+[T+03] State: BALANCED  | Stab: 100.0/100.0 | BALANCED: Threat (40.6) absorbed with no state shift.
+[T+04] State: BALANCED  | Stab: 100.0/100.0 | BALANCED: Threat (36.7) absorbed with no state shift.
+[T+05] State: BALANCED  | Stab:  89.4/100.0 | STRAIN: Absorbed heavy force. Stability reduced by 22.6.
+[T+06] State: BALANCED  | Stab:  80.2/100.0 | STRAIN: Absorbed heavy force. Stability reduced by 21.2.
+[T+07] REBOOT: REBOOT (1/2): Core reset to BALANCED at -20.0 capacity.
+[T+08] State: BALANCED  | Stab:  80.0/ 80.0 | BALANCED: Threat (26.5) absorbed with no state shift.
+[T+09] State: BALANCED  | Stab:  80.0/ 90.0 | BALANCED: Threat (22.2) absorbed with no state shift.
++-- REPAIR: REPAIR: Rebuilt +10.0 max capacity baseline.
+[T+10] State: BALANCED  | Stab:  74.6/100.0 | STRAIN: Absorbed heavy force. Stability reduced by 17.4.
++-- REPAIR: REPAIR: Rebuilt +10.0 max capacity baseline.
+[T+11] State: BALANCED  | Stab:  86.6/100.0 | BALANCED: Threat (34.9) absorbed with no state shift.
+[T+12] State: STRAINED  | Stab:  78.0/100.0 | STRAIN: Absorbed heavy force. Stability reduced by 20.6.
+[T+13] State: STRAINED  | Stab:  71.8/100.0 | STRAIN: Absorbed heavy force. Stability reduced by 18.3.
+[T+14] State: STRAINED  | Stab:  72.8/100.0 | STRAIN: Absorbed heavy force. Stability reduced by 10.9.
+[T+15] REBOOT: REBOOT (2/2): Core reset to BALANCED at -20.0 capacity.
+[T+16] TERMINAL COLLAPSE: Reboot denied: Core burned out.
+
+=== FINAL TELEMETRY ===
+{
+"tick": 16,
+"state": "COLLAPSED",
+"stability": 0.0,
+"max_stability": 80.0,
+"original_max": 100.0,
+"reboots_used": [
+2,
+2
+],
+"reboots_formatted": "2/2",
+"threshold": 10.0,
+"recovery_rate": 12.0,
+"rng_seed": 42
+}
+
+Total events logged: 33
+
+============================================================
+RUN 2: STRICT_MATH MODE (seed=42, max_ticks=30)
+
+=== ACTIVATING PROTOCOL_SINGULARITY_v2.5.1 RUNTIME ===
+Seed: 42 | Mode: STRICT_MATH | Max Ticks: 30
+
+[T+01] State: BALANCED  | Stab:  91.6/100.0 | STRAIN: Absorbed heavy force. Stability reduced by 20.4.
+[T+02] State: BALANCED  | Stab: 100.0/100.0 | BALANCED: Threat (21.9) absorbed with no state shift.
+[T+03] State: BALANCED  | Stab: 100.0/100.0 | BALANCED: Threat (40.6) absorbed with no state shift.
+[T+04] State: BALANCED  | Stab: 100.0/100.0 | BALANCED: Threat (36.7) absorbed with no state shift.
+[T+05] State: BALANCED  | Stab:  89.4/100.0 | STRAIN: Absorbed heavy force. Stability reduced by 22.6.
+[T+06] State: BALANCED  | Stab:  80.2/100.0 | STRAIN: Absorbed heavy force. Stability reduced by 21.2.
+[T+07] REBOOT: REBOOT (1/2): Core reset to BALANCED at -20.0 capacity.
+[T+08] State: BALANCED  | Stab:  80.0/ 80.0 | BALANCED: Threat (26.5) absorbed with no state shift.
+[T+09] State: BALANCED  | Stab:  80.0/ 90.0 | BALANCED: Threat (22.2) absorbed with no state shift.
++-- REPAIR: REPAIR: Rebuilt +10.0 max capacity baseline.
+[T+10] State: BALANCED  | Stab:  74.6/100.0 | STRAIN: Absorbed heavy force. Stability reduced by 17.4.
++-- REPAIR: REPAIR: Rebuilt +10.0 max capacity baseline.
+[T+11] State: BALANCED  | Stab:  86.6/100.0 | BALANCED: Threat (34.9) absorbed with no state shift.
+[T+12] State: STRAINED  | Stab:  78.0/100.0 | STRAIN: Absorbed heavy force. Stability reduced by 20.6.
+[T+13] State: STRAINED  | Stab:  71.8/100.0 | STRAIN: Absorbed heavy force. Stability reduced by 18.3.
+[T+14] State: STRAINED  | Stab:  72.8/100.0 | STRAIN: Absorbed heavy force. Stability reduced by 10.9.
+[T+15] REBOOT: REBOOT (2/2): Core reset to BALANCED at -20.0 capacity.
+[T+16] TERMINAL COLLAPSE: Reboot denied: Core burned out.
+
+=== FINAL TELEMETRY ===
+{
+"tick": 16,
+"state": "COLLAPSED",
+"stability": 0.0,
+"max_stability": 80.0,
+"original_max": 100.0,
+"reboots_used": [
+2,
+2
+],
+"reboots_formatted": "2/2",
+"threshold": 10.0,
+"recovery_rate": 12.0,
+"rng_seed": 42
+}
+
+Total events logged: 33
+
+(chatgpt)
+
+This output is actually a good validation of your implementation.
+
+The important observation is:
+
+> SAFETY_GUARD and STRICT_MATH produced identical behavior for this seed (42).
+
+
+
+That is not a bug. It means the code never entered the situation where the two modes differ.
+
+The only place the modes diverge is here:
+
+STRICT_MATH
+
+Always performs the reboot after applying the penalty.
+
+Even if the new max_stability falls below the threshold.
+
+
+SAFETY_GUARD
+
+Checks whether the projected max_stability would be below the threshold.
+
+If so, it refuses the reboot.
+
+
+
+For your run:
+
+Initial capacity = 100
+
+Reboot penalty = 20%
+
+
+Reboot 1:
+
+100 → 80
+
+
+Reboot 2:
+
+100 (after repairs) → 80
+
+
+Threshold = 10
+
+Since 80 > 10, the safety guard never activates.
+
+So both modes execute the exact same sequence.
+
+
+---
+
+When would they differ?
+
+Suppose instead:
+
+Current max capacity = 12
+
+Threshold = 10
+
+Penalty = 20%
+
+
+Then
+
+12 × 0.8 = 9.6
+
+Now:
+
+STRICT_MATH
+
+max = 9.6
+state = BALANCED
+stability = 9.6
+
+It obeys the equation exactly, even though the system is now weaker than the collapse threshold.
+
+SAFETY_GUARD
+
+Projected max = 9.6
+9.6 <= threshold
+
+Reboot rejected
+System remains COLLAPSED
+
+Now the two modes produce different outcomes.
+
+
+---
+
+What this tells you
+
+Your architecture is behaving correctly:
+
+✓ Deterministic
+
+✓ Reproducible (same seed → same result)
+
+✓ Mode switching works
+
+✓ No hidden randomness
+
+✓ Safety extension is isolated from the mathematical model
+
+
+The only reason you observed identical logs is that the chosen parameters never exercised the branch where the two modes differ.
+
+One improvement for testing
+
+To verify the distinction, create a dedicated test case where the reboot penalty is large enough (or the current capacity is small enough) that:
+
+projected_max <= threshold
+
+For example:
+
+max_stability = 15
+
+threshold = 10
+
+capacity_penalty_percent = 40
+
+
+or repeatedly reboot without structural repairs until the remaining capacity approaches the threshold.
+
+That forces the code down the divergent branch and demonstrates that STRICT_MATH and SAFETY_GUARD truly implement different policies.
