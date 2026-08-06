@@ -1,4 +1,4 @@
-"""
+""""
 ================================================================================
 PROTOCOL_SINGULARITY_v2 — Automated Equilibrium Engine
 Constructed Version (Final)
