@@ -577,3 +577,192 @@ probability of terminal failure
 That starts turning the project from a demonstration into an experimental system model.
 
 And this is probably a good example of why you said you find yourself pleasantly patient when making simulations: you're not trying to force the simulation to produce a desired story. You're letting the stochastic system produce an outcome and then asking what does this trajectory tell us?
+
+
+(output)
+
+==========================================================
+AUTOMATED ENGINE WITH RARE CORE REPAIR (PROTOCOL_v2)
+
+--- TIME TICK T+1 ---
+[EVENT 1: THREAT]: Attack magnitude = 59.4
+└── ⚠️  [STATE SHIFT -> STRAINED]: Heavy shock absorbed. Remaining stability: 82.2.
+└── 🟢 [STATE RECOVERED -> BALANCED]: Restored +12.0 stability (94.2/100.0).
+└── ✨ [REPAIR SKIPPED]: Core capacity is already at maximum ceiling (100.0).
+
+--- TIME TICK T+2 ---
+[EVENT 1: THREAT]: Attack magnitude = 27.4
+└── 🛡️  [STATE MAINTAINED -> BALANCED]: Threat (27.4) absorbed smoothly.
+└── ⚡ [AUTO-RECOVERY]: Restored +5.8 stability -> Current: 100.0/100.0.
+└── ✨ [REPAIR SKIPPED]: Core capacity is already at maximum ceiling (100.0).
+
+--- TIME TICK T+3 ---
+[EVENT 1: THREAT]: Attack magnitude = 87.2
+└── ⚠️  [STATE SHIFT -> STRAINED]: Heavy shock absorbed. Remaining stability: 73.8.
+└── 🟢 [STATE RECOVERED -> BALANCED]: Restored +12.0 stability (85.8/100.0).
+└── ✨ [REPAIR SKIPPED]: Core capacity is already at maximum ceiling (100.0).
+
+--- TIME TICK T+4 ---
+[EVENT 1: THREAT]: Attack magnitude = 53.8
+└── ⚠️  [STATE SHIFT -> STRAINED]: Heavy shock absorbed. Remaining stability: 69.7.
+└── 🟢 [STATE RECOVERED -> BALANCED]: Restored +12.0 stability (81.7/100.0).
+└── ✨ [REPAIR SKIPPED]: Core capacity is already at maximum ceiling (100.0).
+
+--- TIME TICK T+5 ---
+[EVENT 1: THREAT]: Attack magnitude = 70.6
+└── ⚠️  [STATE SHIFT -> STRAINED]: Heavy shock absorbed. Remaining stability: 60.5.
+└── ⚡ [AUTO-RECOVERY]: Restored +12.0 stability -> Current: 72.5/100.0.
+└── ✨ [REPAIR SKIPPED]: Core capacity is already at maximum ceiling (100.0).
+
+--- TIME TICK T+6 ---
+[EVENT 1: THREAT]: Attack magnitude = 63.0
+└── 💥 [CRITICAL SHIFT -> COLLAPSED]: Threat (63.0) destroyed structural boundary!
+🚨 [CRITICAL ALERT]: Collapse detected! Triggering automated hard reboot...
+└── 🔄 [AUTO-REBOOT EXECUTED (1/2)]: Reset to BALANCED | Penalty: -25.0 max capacity | New Max: 75.0
+
+--- TIME TICK T+7 ---
+[EVENT 1: THREAT]: Attack magnitude = 52.6
+└── ⚠️  [STATE SHIFT -> STRAINED]: Heavy shock absorbed. Remaining stability: 59.2.
+└── 🟢 [STATE RECOVERED -> BALANCED]: Restored +12.0 stability (71.2/75.0).
+└── ⏳ [STRUCTURAL SCAN]: Core repair idle.
+
+--- TIME TICK T+8 ---
+[EVENT 1: THREAT]: Attack magnitude = 26.5
+└── 🛡️  [STATE MAINTAINED -> BALANCED]: Threat (26.5) absorbed smoothly.
+└── ⚡ [AUTO-RECOVERY]: Restored +3.8 stability -> Current: 75.0/75.0.
+└── ⏳ [STRUCTURAL SCAN]: Core repair idle.
+
+--- TIME TICK T+9 ---
+[EVENT 1: THREAT]: Attack magnitude = 75.9
+└── 💥 [CRITICAL SHIFT -> COLLAPSED]: Threat (75.9) destroyed structural boundary!
+🚨 [CRITICAL ALERT]: Collapse detected! Triggering automated hard reboot...
+└── 🔄 [AUTO-REBOOT EXECUTED (2/2)]: Reset to BALANCED | Penalty: -18.8 max capacity | New Max: 56.2
+
+--- TIME TICK T+10 ---
+[EVENT 1: THREAT]: Attack magnitude = 32.3
+└── ⚠️  [STATE SHIFT -> STRAINED]: Heavy shock absorbed. Remaining stability: 46.6.
+└── 🟢 [STATE RECOVERED -> BALANCED]: Restored +9.7 stability (56.2/56.2).
+└── ⏳ [STRUCTURAL SCAN]: Core repair idle.
+
+--- TIME TICK T+11 ---
+[EVENT 1: THREAT]: Attack magnitude = 79.5
+└── 💥 [CRITICAL SHIFT -> COLLAPSED]: Threat (79.5) destroyed structural boundary!
+🚨 [CRITICAL ALERT]: Collapse detected! Triggering automated hard reboot...
+└── 🚫 [REBOOT FAILED]: Max reboots reached (2/2). Core burned out.
+
+💀 [TERMINAL FAILURE]: All reboots exhausted. System permanently destroyed at Tick T+11.
+
+==========================================================
+SIMULATION TERMINATED | Total Lifespan: 11 Ticks
+Final Max Capacity: 56.2/100.0
+
+(chatgpt)
+
+This run is actually more interesting than the earlier ones because every major subsystem was exercised except for a successful structural repair.
+
+Timeline
+
+Tick	Event	Result
+
+T1–T5	Heavy attacks	Recovery kept the system alive.
+T6	First collapse	Reboot #1 → Max capacity 100 → 75
+T7–T8	Survival	Recovery worked, repair roll failed.
+T9	Second collapse	Reboot #2 → Max capacity 75 → 56.2
+T10	Survival	Recovery restored to new ceiling.
+T11	Third collapse	No reboot budget → Permanent destruction
+
+
+What this demonstrates
+
+Your simulation is showing a clear lifecycle:
+
+Healthy
+      ↓
+Repeated Stress
+      ↓
+Collapse
+      ↓
+Reboot
+      ↓
+Permanent Capacity Loss
+      ↓
+Repeated Stress
+      ↓
+Collapse
+      ↓
+Final Failure
+
+That's a coherent state progression.
+
+One thing I noticed
+
+Your Rare Structural Repair never succeeds.
+
+Every time after capacity drops below 100, you see:
+
+⏳ [STRUCTURAL SCAN]: Core repair idle.
+
+That isn't necessarily a bug—it just means the random repair chance (25%) didn't occur during this run.
+
+To verify the repair code actually works, you could temporarily use:
+
+chance_percent = 100.0
+
+Run one simulation.
+
+If you then see something like
+
+🔧 [RARE STRUCTURAL REPAIR TRIGGERED!]
+New Max Baseline: 66.2/100.0
+
+then you know the repair mechanism is functioning correctly.
+
+After that, change it back to 25%.
+
+One design observation
+
+Currently your repair happens every tick after recovery:
+
+Threat
+→ Recovery
+→ Structural Repair Check
+
+That means repair is tied to time rather than to conditions.
+
+In future versions, you could make repair depend on conditions instead, for example:
+
+only after a reboot,
+
+only while BALANCED,
+
+only if stability is above 90%,
+
+only after surviving N consecutive ticks.
+
+
+That would make repair represent gradual rebuilding rather than a constant lottery.
+
+Overall assessment
+
+Compared with your earlier versions, this simulation now has a complete operational loop:
+
+✅ Threat model
+
+✅ State transitions
+
+✅ Recovery
+
+✅ Collapse detection
+
+✅ Limited reboot budget
+
+✅ Permanent degradation
+
+✅ Recovery ceiling
+
+✅ Structural repair mechanism
+
+✅ Terminal failure
+
+
+At this point, the next improvements are less about adding more mechanics and more about refining the rules—deciding exactly when repairs should occur, how much should be repaired, and under what conditions the system deserves another chance. Those design decisions will shape the behavior more than simply adding new methods.
