@@ -1,3 +1,39 @@
+CHATGPT 💭
+
+A practical development order looks like this:
+Core correctness
+Finish the mathematical model.
+Finish the state machine.
+Verify invariants.
+Make sure the simulation behaves as intended.
+Feature completeness
+Add every mechanism you want (recovery, reboot, repair, multi-wave attacks, etc.).
+Avoid spending time making everything look perfect while the design is still changing.
+Stabilization
+Stop adding major features.
+Fix bugs.
+Improve consistency.
+Expand automated tests (which you've already started with GitHub Actions).
+Polishing
+Clean file names.
+Improve README.
+Refactor duplicated code.
+Add documentation.
+Organize folders.
+Improve API design.
+Management scripts
+Write scripts that help you maintain the project rather than the simulation itself.
+For example, a repository might eventually have:
+scripts/
+    format.py         # format code
+    validate.py       # run validation checks
+    benchmark.py      # performance tests
+    release.py        # package a release
+    clean.py          # remove temporary files
+These don't change the engine—they help you manage it.
+Since PROTOCOL_SINGULARITY is still evolving, writing these management scripts after the architecture settles is a sensible approach. Otherwise, you'll end up rewriting your tooling every time the engine changes.
+Your recent step of adding GitHub Actions is already part of this polishing phase. It doesn't change the simulation itself, but it automatically checks that the project still runs whenever you make changes. As the project grows, you can gradually add more automation—formatting, testing, benchmarks, and documentation generation—without interrupting development of the core engine.
+
 # PROTOCOL_SINGULARITY
 
 [![Python 3.x](https://img.shields.io/badge/python-3.x-blue.svg)](https://www.python.org/)
