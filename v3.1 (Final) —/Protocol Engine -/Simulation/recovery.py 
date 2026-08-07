@@ -1,0 +1,30 @@
+"""
+protocol_engine/simulation/recovery.py
+[MEASURED STATE] Dual-channel recovery mechanics.
+"""
+from typing import Dict, Any, Tuple
+from protocol_engine.types import SystemState
+
+
+def compute_recovery(
+    stability: float,
+    max_stability: float,
+    state: SystemState,
+    alpha: float,
+) -> Tuple[float, SystemState, Dict[str, Any]]:
+    """
+    Compute post-recovery stability without mutating state.
+    Returns: (new_stability, new_state, metadata)
+    """
+    if state == SystemState.COLLAPSED:
+        return stability, state, {"blocked": True}
+
+    new_stability = min(max_stability, stability + alpha)
+    new_state = state
+    if new_stability >= (max_stability * 0.8) and state == SystemState.STRAINED:
+        new_state = SystemState.BALANCED
+
+    return new_stability, new_state, {
+        "stab_gained": new_stability - stability,
+        "alpha": alpha,
+    }
