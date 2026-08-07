@@ -1,0 +1,114 @@
+"""
+protocol_engine/core.py
+SingularityCoreV3 — Active Shielding / Defense Layer.
+
+Two-stage threat flow with ACTIVE shield:
+  Stage 1: Shield absorbs with mode-dependent efficiency
+  Stage 2: Residual damage hits system health
+
+Shield recharges at a rate proportional to elapsed time when idle.
+When reboot is committed, system returns to HEALTHY immediately.
+"""
+
+import random
+from typing import Dict, Any, List, Optional
+
+from protocol_engine.types import SystemState, RebootMode, ShieldState, ShieldMode, EventTier
+from protocol_engine.simulation.recovery import compute_recovery
+from protocol_engine.simulation.reboot import compute_reboot
+from protocol_engine.simulation.shield import compute_shield_recharge
+from protocol_engine.pipeline.planner import plan_threat_impact
+from protocol_engine.pipeline.validator import validate_plan
+from protocol_engine.pipeline.executor import commit_threat
+from protocol_engine.telemetry.events import EventLog
+
+
+class SingularityCoreV3:
+
+    DEFAULT_SHIELD_EFF = 0.55
+    SHIELD_ENERGY_REFILL_RATE = 0.10
+    REBOOT_COST = 0.20
+
+    def __init__(self, shield_eff, initial_shield_energy=1.0):
+        self.shield_eff = shield_eff
+        self.shield_energy = initial_shield_energy
+        self.state = SystemState.HEALTHY
+        self.shield_mode = ShieldMode.PASSIVE
+        self.event_log = EventLog()
+        self.last_tick = 0.0
+
+    def activate_shield(self, mode: ShieldMode) -> ShieldState:
+        if self.state == SystemState.CRASHED:
+            self.event_log.warn(
+                "Cannot activate shield: system crashed",
+                tier=EventTier.HIGH,
+            )
+            return ShieldState.INACTIVE
+        self.shield_mode = mode
+        self.event_log.info(
+            f"Shield activated in mode={mode.name}",
+            tier=EventTier.LOW,
+        )
+        return ShieldState.ACTIVE
+
+    def _recharge_shield(self, dt, is_idle):
+        if not is_idle:
+            return
+        delta = compute_shield_recharge(
+            dt,
+            self.SHIELD_ENERGY_REFILL_RATE,
+        )
+        self.shield_energy = min(1.0, self.shield_energy + delta)
+
+    def commit_reboot(self, mode=RebootMode.SAFE):
+        if mode == RebootMode.FORCED:
+            self.event_log.warn(
+                "Forced reboot requested",
+                tier=EventTier.HIGH,
+            )
+            cost = self.REBOOT_COST * 1.5
+        else:
+            cost = compute_reboot(self.state, mode)
+        self.state = SystemState.HEALTHY
+        self.shield_energy = max(0.0, self.shield_energy - cost)
+        self.event_log.info(
+            f"Reboot executed mode={mode.name}",
+            tier=EventTier.HIGH,
+        )
+
+    def apply_threat(self, threat: Dict[str, Any], current_time: float) -> Dict[str, Any]:
+        dt = current_time - self.last_tick
+        is_idle = (self.state == SystemState.HEALTHY)
+        self._recharge_shield(dt, is_idle)
+
+        plan = plan_threat_impact(self.shield_mode, threat, self.shield_eff)
+        if not validate_plan(plan, self.shield_energy):
+            self.event_log.error(
+                "Threat plan invalid; rejecting",
+                tier=EventTier.HIGH,
+                payload={"threat_id": threat.get("id")},
+            )
+            return {"status": "rejected"}
+
+        residual = commit_threat(plan)
+        self.shield_energy = max(0.0, self.shield_energy - plan["shield_cost"])
+        self.event_log.info(
+            f"Threat committed: {threat.get('id')}",
+            tier=EventTier.MEDIUM,
+            payload={"residual": residual},
+        )
+
+        if residual > 0 and self.state == SystemState.HEALTHY:
+            self.state = SystemState.DEGRADED
+
+        recovery = compute_recovery(self.state, dt)
+        self.last_tick = current_time
+        return {
+            "state": self.state,
+            "residual": residual,
+            "shield_energy": self.shield_energy,
+            "recovery": recovery,
+        }
+
+
+SingularityCoreV3
