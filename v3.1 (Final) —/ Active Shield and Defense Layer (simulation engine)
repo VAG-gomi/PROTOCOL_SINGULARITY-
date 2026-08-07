@@ -17,4 +17,4 @@
 │       ├── metrics.py                 # MetricsCollector
 │       └── visualization.py           # 3-panel trajectory plot
 ├── main.py                            # Driver: 3 shield modes
-└── README.md 
+└── README.md
