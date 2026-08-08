@@ -1,1 +1,566 @@
-""" ================================================================================ PROTOCOL_SINGULARITY_v2.5.1 — v4-COG HARDENED EDITION Dynamic Adversarial Equilibrium & Resilience Engine Classification: Hybrid Semantic-Logic Protocol + v4-COG Cognitive Invariants ================================================================================ Version:     v2.5.1-COG Status:      ACTIVE Scope:       Production-grade resilience simulation with deterministic              reproducibility, causal traceability, and explicit safety guards.  CHANGELOG from v2.5:   [F-01 FIXED] Reboot logic now offers strict_math_mode vs. safety_guard_mode.                Governing equation 5 is honored in strict mode; threshold guard                is explicit and documented in safety mode.   [F-02 FIXED] recovery_rate is now a core state variable (self.alpha), not a                per-call injection. Causal traceability restored.   [F-03 FIXED] All probabilistic operations use a seedable, inspectable RNG.                Reproducibility invariant (v4-COG #7) satisfied.   [F-04 FIXED] Defensive clamp on stability after STRAINED degradation.   [F-05 FIXED] Telemetry returns structured dicts; string formatting is a                presentation-layer concern only.   [F-06 FIXED] Runtime loop accepts max_ticks for deterministic termination. ================================================================================ """  import random import time import json from dataclasses import dataclass, field from typing import Dict, Any, Tuple, Optional, List from enum import Enum, auto   # ============================================================================== # TIER 1: [DETERMINISTIC] Core Types and State Enumeration # ==============================================================================  class SystemState(Enum):     """[DETERMINISTIC] Operational state machine. No probabilistic ambiguity."""     BALANCED = auto()     STRAINED = auto()     COLLAPSED = auto()   class RebootMode(Enum):     """     [DETERMINISTIC] Explicit behavioral mode selection.     STRICT_MATH    : Honor governing equation 5 unconditionally.     SAFETY_GUARD   : Add explicit threshold guard (documented deviation from raw math).     """     STRICT_MATH = auto()     SAFETY_GUARD = auto()   @dataclass class TelemetrySnapshot:     """     [DETERMINISTIC] Structured telemetry — no string formatting at data layer.     Addresses F-05.     """     tick: int     state: SystemState     stability: float     max_stability: float     original_max: float     reboot_count: int     max_reboots: int     threshold: float     recovery_rate: float     rng_seed: Optional[int]      def to_dict(self) -> Dict[str, Any]:         return {             "tick": self.tick,             "state": self.state.name,             "stability": round(self.stability, 2),             "max_stability": round(self.max_stability, 2),             "original_max": round(self.original_max, 2),             "reboots_used": (self.reboot_count, self.max_reboots),             "reboots_formatted": f"{self.reboot_count}/{self.max_reboots}",             "threshold": round(self.threshold, 2),             "recovery_rate": round(self.recovery_rate, 2),             "rng_seed": self.rng_seed,         }   @dataclass class EventLog:     """     [DETERMINISTIC] Immutable event record for causal traceability.     Every state transition produces one EventLog entry.     """     tick: int     event_type: str     state_before: SystemState     state_after: SystemState     stability_before: float     stability_after: float     max_stability_before: float     max_stability_after: float     metadata: Dict[str, Any] = field(default_factory=dict)   # ============================================================================== # TIER 1: [DETERMINISTIC] SingularityCore Engine # ==============================================================================  class SingularityCore:     """     [DETERMINISTIC] PROTOCOL_SINGULARITY_v2.5.1 Core Engine      Mathematical fidelity:       E_t = S_t - T_t       Sigma_{t+1}, S_{t+1} = f(S_t, T_t)  [governing equation 2]       S_{t+1} = min(M_t, S_t + alpha)      [governing equation 3]       M_{t+1} = repair logic             [governing equation 4]       Reboot: M_{t+1} = M_t * (1-delta)    [governing equation 5]      v4-COG Invariants enforced:       #3 CAUSALITY OVER CORRELATION — every transition has a mechanism.       #6 GAP CHECK OVER GUESSING — defensive clamps, no silent failures.       #7 REPRODUCIBILITY OVER RANDOMNESS — seedable RNG, deterministic traces.     """      def init(         self,         max_stability: float = 100.0,         collapse_threshold: float = 10.0,         max_reboots: int = 2,         recovery_rate: float = 12.0,         reboot_mode: RebootMode = RebootMode.SAFETY_GUARD,         rng_seed: Optional[int] = None,     ):         # [ANCHOR STATE]: Immutable ceilings and initial baselines         self.original_max_capacity: float = float(max_stability)         self.max_stability: float = float(max_stability)         self.stability: float = float(max_stability)         self.threshold: float = float(collapse_threshold)         self.system_state: SystemState = SystemState.BALANCED          # [DETERMINISTIC] Recovery rate as core state variable (F-02 fix)         self.alpha: float = float(recovery_rate)          # [DETERMINISTIC] Reboot mode explicitly selected (F-01 fix)         self.reboot_mode: RebootMode = reboot_mode          # Reboot metrics         self.reboot_count: int = 0         self.max_reboots: int = int(max_reboots)          # [DETERMINISTIC] Seedable, inspectable RNG (F-03 fix)         self.rng_seed: Optional[int] = rng_seed         self._rng: random.Random = random.Random(rng_seed)          # [DETERMINISTIC] Causal trace log (v4-COG extension)         self.event_history: List[EventLog] = []         self.tick_counter: int = 0      # --------------------------------------------------------------------------     # [GATE] Internal consistency validator     # --------------------------------------------------------------------------     def _validate_invariants(self) -> None:         """         [GATE] Tier 2.5 — Deterministic invariant check.         Raises AssertionError if any hard invariant is violated.         """         assert self.max_stability >= self.threshold, \             f"[INVARIANT BREACH] max_stability ({self.max_stability}) < threshold ({self.threshold})"         assert self.stability >= 0.0, \             f"[INVARIANT BREACH] stability ({self.stability}) < 0"         assert self.stability <= self.max_stability, \             f"[INVARIANT BREACH] stability ({self.stability}) > max_stability ({self.max_stability})"         assert self.max_stability <= self.original_max_capacity, \             f"[INVARIANT BREACH] max_stability ({self.max_stability}) > original_max ({self.original_max_capacity})"      def _log_event(         self,         event_type: str,         s_before: float,         s_after: float,         m_before: float,         m_after: float,         state_after: SystemState,         metadata: Optional[Dict[str, Any]] = None,     ) -> None:         """[DETERMINISTIC] Append immutable event to causal trace."""         log = EventLog(             tick=self.tick_counter,             event_type=event_type,             state_before=self.system_state,             state_after=state_after,             stability_before=s_before,             stability_after=s_after,             max_stability_before=m_before,             max_stability_after=m_after,             metadata=metadata or {},         )         self.event_history.append(log)         self.system_state = state_after      # --------------------------------------------------------------------------     # [VECTOR 1: THREAT INJECTION]     # Governing Equation 1 & 2     # --------------------------------------------------------------------------     def inject_threat(self, threat_magnitude: float) -> Dict[str, Any]:         """         [DETERMINISTIC] Calculates instantaneous equilibrium against incoming force vector.         """         threat_magnitude = float(threat_magnitude)         s_before = self.stability         m_before = self.max_stability          net_equilibrium = self.stability - threat_magnitude          # State Transition 1: Structural Boundary Breach         if net_equilibrium < self.threshold:             self.stability = 0.0             self._log_event("THREAT_COLLAPSE", s_before, 0.0, m_before, m_before, SystemState.COLLAPSED,                            metadata={"threat": threat_magnitude, "net_eq": net_equilibrium})             return {                 "event": "THREAT_COLLAPSE",                 "state": self.system_state.name,                 "threat": threat_magnitude,                 "net_equilibrium": net_equilibrium,                 "msg": f"CRITICAL: Threat ({threat_magnitude:.1f}) breached threshold ({self.threshold:.1f}).",             }          # State Transition 2: Strained Adaptation         elif threat_magnitude > (self.stability * 0.5):             degradation = threat_magnitude * 0.3             new_stability = self.stability - degradation              # [DETERMINISTIC] Defensive clamp (F-04 fix) — never go below 0             new_stability = max(0.0, new_stability)             # [DETERMINISTIC] Additional guard: if clamped value would violate threshold, collapse             if new_stability < self.threshold:                 self.stability = 0.0                 self._log_event("THREAT_COLLAPSE_CLAMPED", s_before, 0.0, m_before, m_before, SystemState.COLLAPSED,                                metadata={"threat": threat_magnitude, "degradation": degradation, "reason": "post-degradation clamp to threshold"})                 return {                     "event": "THREAT_COLLAPSE",                     "state": self.system_state.name,                     "threat": threat_magnitude,                     "degradation": degradation,                     "msg": f"CRITICAL: Degradation ({degradation:.1f}) pushed stability below threshold.",                 }              self.stability = new_stability             self._log_event("THREAT_STRAIN", s_before, new_stability, m_before, m_before, SystemState.STRAINED,                            metadata={"threat": threat_magnitude, "degradation": degradation})             return {                 "event": "THREAT_STRAIN",                 "state": self.system_state.name,                 "threat": threat_magnitude,                 "degradation": degradation,                 "msg": f"STRAIN: Absorbed heavy force. Stability reduced by {degradation:.1f}.",             }          # State Transition 3: Equilibrium Maintained         else:             self._log_event("THREAT_ABSORBED", s_before, s_before, m_before, m_before, SystemState.BALANCED,                            metadata={"threat": threat_magnitude, "net_eq": net_equilibrium})             return {                 "event": "THREAT_ABSORBED",                 "state": self.system_state.name,                 "threat": threat_magnitude,                 "net_equilibrium": net_equilibrium,                 "msg": f"BALANCED: Threat ({threat_magnitude:.1f}) absorbed with no state shift.",             }      # --------------------------------------------------------------------------     # [VECTOR 2: PASSIVE RECOVERY]     # Governing Equation 3     # --------------------------------------------------------------------------     def auto_recovery_tick(self) -> Dict[str, Any]:         """         [DETERMINISTIC] Restores active energy up to current maximum capacity ceiling.         Uses self.alpha (core state variable) instead of runtime injection (F-02 fix).         """         if self.system_state == SystemState.COLLAPSED:             return {"event": "RECOVERY_BLOCKED", "restored": 0.0, "msg": "Recovery offline: System COLLAPSED."}          s_before = self.stability         m_before = self.max_stability          self.stability = min(self.max_stability, self.stability + self.alpha)         restored = self.stability - s_before          # Auto-rebalance state if energy recovers above 80% threshold         new_state = self.system_state         if self.stability >= (self.max_stability * 0.8) and self.system_state == SystemState.STRAINED:             new_state = SystemState.BALANCED          self.log_event("RECOVERY", s_before, self.stability, m_before, m_before, new_state,                        metadata={"restored": restored, "alpha": self.alpha})          return {             "event": "RECOVERY_SUCCESS",             "restored": restored,             "current_stability": self.stability,             "max_capacity": self.max_stability,             "state": self.system_state.name,             "msg": f"HEALING: Restored +{restored:.1f} stability.",         }      # --------------------------------------------------------------------------     # [VECTOR 3: CORE REPAIR]     # Governing Equation 4     # --------------------------------------------------------------------------     def rare_structural_repair(         self,         chance_percent: float = 25.0,         repair_amount: float = 10.0,     ) -> Dict[str, Any]:         """         [PROBABILISTIC] Restoration of maximum baseline capacity toward original ceiling.         Uses self.rng (seedable) for reproducibility (F-03 fix).         """         if self.system_state == SystemState.COLLAPSED:             return {"event": "REPAIR_BLOCKED", "repaired": 0.0, "msg": "Repair offline: System COLLAPSED."}          if self.max_stability >= self.original_max_capacity:             return {"event": "REPAIR_MAXED", "repaired": 0.0, "msg": "Core at 100% capacity."}          # [PROBABILISTIC] Deterministic if seed is set; reproducible trace if seeded         roll = self.rng.uniform(0.0, 100.0)         if roll <= chance_percent:             m_before = self.max_stability             self.max_stability = min(self.original_max_capacity, self.max_stability + repair_amount)             repaired = self.max_stability - m_before             self.log_event("REPAIR", self.stability, self.stability, m_before, self.max_stability, self.system_state,                            metadata={"roll": roll, "threshold": chance_percent, "repaired": repaired})             return {                 "event": "REPAIR_SUCCESS",                 "repaired": repaired,                 "new_max": self.max_stability,                 "roll": roll,                 "msg": f"REPAIR: Rebuilt +{repaired:.1f} max capacity baseline.",             }          return {"event": "REPAIR_IDLE", "repaired": 0.0, "roll": roll, "msg": "Structural scan idle."}      # --------------------------------------------------------------------------     # [VECTOR 4: EMERGENCY FAILSAFE]     # Governing Equation 5 — with explicit mode selection (F-01 fix)     # --------------------------------------------------------------------------     def manual_reboot(self, capacity_penalty_percent: float = 20.0) -> Dict[str, Any]:         """         [DETERMINISTIC] Hard overrides COLLAPSED state at permanent structural capacity cost.          Mode STRICT_MATH:             Honors governing equation 5 exactly: Sigma{t+1}=BALANCED, S{t+1}=M{t+1}.             No threshold guard. If penalty pushes M_t below Theta, system enters             BALANCED at sub-threshold capacity and will collapse on next threat.             This is mathematically pure but operationally dangerous.          Mode SAFETY_GUARD (default):             Adds explicit threshold guard. If M{t+1} <= Theta, system remains COLLAPSED             and reports REBOOT_FAILED_THRESHOLD. This is a documented safety extension             beyond the raw mathematical model.         """         if self.reboot_count >= self.max_reboots:             return {"event": "REBOOT_EXHAUSTED", "success": False, "msg": "Reboot denied: Core burned out."}          if self.system_state != SystemState.COLLAPSED:             return {"event": "REBOOT_UNNEEDED", "success": False, "msg": "Reboot skipped: System operational."}          s_before = self.stability  # 0.0         m_before = self.max_stability          # Apply structural capacity penalty         penalty = self.max_stability * (capacity_penalty_percent / 100.0)         projected_max = m_before - penalty          # [GATE] Mode-dependent behavior (F-01 fix)         if self.reboot_mode == RebootMode.SAFETY_GUARD:             if projected_max <= self.threshold:                 self._log_event("REBOOT_FAILED", s_before, 0.0, m_before, m_before, SystemState.COLLAPSED,                                metadata={"penalty": penalty, "projected_max": projected_max, "mode": "SAFETY_GUARD"})                 return {                     "event": "REBOOT_FAILED_THRESHOLD",                     "success": False,                     "projected_max": projected_max,                     "msg": "Core capacity below minimum limit.",                 }          # Commit the reboot         self.max_stability = projected_max         self.reboot_count += 1         self.stability = self.max_stability          self._log_event("REBOOT", s_before, self.stability, m_before, self.max_stability, SystemState.BALANCED,                        metadata={"penalty": penalty, "reboot_number": self.reboot_count, "mode": self.reboot_mode.name})          return {             "event": "REBOOT_SUCCESS",             "success": True,             "reboot_number": self.reboot_count,             "penalty": penalty,             "new_max": self.max_stability,             "mode": self.reboot_mode.name,             "msg": f"REBOOT ({self.reboot_count}/{self.max_reboots}): Core reset to BALANCED at -{penalty:.1f} capacity.",         }      # --------------------------------------------------------------------------     # [DETERMINISTIC] Telemetry     # --------------------------------------------------------------------------     def get_telemetry(self) -> TelemetrySnapshot:         """Returns structured snapshot of system state (F-05 fix)."""         return TelemetrySnapshot(             tick=self.tick_counter,             state=self.system_state,             stability=self.stability,             max_stability=self.max_stability,             original_max=self.original_max_capacity,             reboot_count=self.reboot_count,             max_reboots=self.max_reboots,             threshold=self.threshold,             recovery_rate=self.alpha,             rng_seed=self.rng_seed,         )      def get_event_history(self) -> List[EventLog]:         """[DETERMINISTIC] Returns immutable causal trace."""         return list(self.event_history)      def export_trace_json(self) -> str:         """[DETERMINISTIC] Full causal trace as JSON for external audit."""         records = []         for ev in self.event_history:             records.append({                 "tick": ev.tick,                 "event_type": ev.event_type,                 "state_before": ev.state_before.name,                 "state_after": ev.state_after.name,                 "stability_delta": round(ev.stability_after - ev.stability_before, 2),                 "max_delta": round(ev.max_stability_after - ev.max_stability_before, 2),                 "metadata": ev.metadata,             })         return json.dumps(records, indent=2)   # ============================================================================== # TIER 1: [DETERMINISTIC] System Driver Loop # ==============================================================================  def execute_protocol_runtime(     max_stability: float = 100.0,     collapse_threshold: float = 10.0,     max_reboots: int = 2,     recovery_rate: float = 12.0,     max_ticks: int = 50,     rng_seed: int = 42,     reboot_mode: RebootMode = RebootMode.SAFETY_GUARD,     verbose: bool = True,     tick_delay: float = 0.0, ) -> Dict[str, Any]:     """     [DETERMINISTIC] Standard execution loop with bounded termination (F-06 fix).      Args:         max_ticks: Hard termination limit for deterministic, reproducible runs.         rng_seed: Seed for the core's RNG, ensuring identical threat sequences.         tick_delay: Seconds between ticks (0.0 for instant execution).      Returns:         Dict with final telemetry, event count, and causal trace JSON.     """     core = SingularityCore(         max_stability=max_stability,         collapse_threshold=collapse_threshold,         max_reboots=max_reboots,         recovery_rate=recovery_rate,         reboot_mode=reboot_mode,         rng_seed=rng_seed,     )      if verbose:         print("=== ACTIVATING PROTOCOL_SINGULARITY_v2.5.1 RUNTIME ===")         print(f"    Seed: {rng_seed} | Mode: {reboot_mode.name} | Max Ticks: {max_ticks}")         print("=" * 60)      for tick in range(1, max_ticks + 1):         core.tick_counter = tick          # Step 1: Ingest Threat Vector (deterministic if seeded)         threat_force = round(core._rng.uniform(20.0, 95.0), 1)         threat_res = core.inject_threat(threat_force)          # Step 2: Catch Collapse Event & Attempt Emergency Reboot         if core.system_state == SystemState.COLLAPSED:             reboot_res = core.manual_reboot(capacity_penalty_percent=20.0)             if not reboot_res["success"]:                 if verbose:                     print(f"[T+{tick:02d}] TERMINAL COLLAPSE: {reboot_res['msg']}")                 break             else:                 if verbose:                     print(f"[T+{tick:02d}] REBOOT: {reboot_res['msg']}")          # Step 3: Execute Passive Healing and Structural Repair         else:             heal_res = core.auto_recovery_tick()             repair_res = core.rare_structural_repair(chance_percent=25.0, repair_amount=10.0)              status = core.get_telemetry()             if verbose:                 print(                     f"[T+{tick:02d}] State: {status.state.name:<9} | "                     f"Stab: {status.stability:>5.1f}/{status.max_stability:>5.1f} | "                     f"{threat_res['msg']}"                 )                 if repair_res["event"] == "REPAIR_SUCCESS":                     print(f"       +-- REPAIR: {repair_res['msg']}")          # [GATE] Invariant validation after every tick         core._validate_invariants()          if tick_delay > 0:             time.sleep(tick_delay)     else:         if verbose:             print(f"=== MAX TICKS ({max_ticks}) REACHED — GRACEFUL TERMINATION ===")      final = core.get_telemetry()     if verbose:         print("\n=== FINAL TELEMETRY ===")         print(json.dumps(final.to_dict(), indent=2))         print(f"\nTotal events logged: {len(core.event_history)}")      return {         "final_telemetry": final.to_dict(),         "event_count": len(core.event_history),         "event_history_json": core.export_trace_json(),         "terminated_at_tick": core.tick_counter,         "terminal_state": final.state.name,     }   # ============================================================================== # TIER 1: [DETERMINISTIC] Demonstration Entry Point # ==============================================================================  if name == "main":     # Run 1: Safety Guard Mode (default, production-safe)     print("\n" + "=" * 60)     print("RUN 1: SAFETY_GUARD MODE (seed=42, max_ticks=30)")     print("=" * 60)     result_safe = execute_protocol_runtime(         max_ticks=30,         rng_seed=42,         reboot_mode=RebootMode.SAFETY_GUARD,         tick_delay=0.0,     )      # Run 2: Strict Math Mode (mathematically pure, operationally dangerous)     print("\n" + "=" * 60)     print("RUN 2: STRICT_MATH MODE (seed=42, max_ticks=30)")     print("=" * 60)     result_strict = execute_protocol_runtime(         max_ticks=30,         rng_seed=42,         reboot_mode=RebootMode.STRICT_MATH,         tick_delay=0.0,     )
+"""
+================================================================================
+PROTOCOL_SINGULARITY_v2.5.1 — v4-COG HARDENED EDITION
+Dynamic Adversarial Equilibrium & Resilience Engine
+Classification: Hybrid Semantic-Logic Protocol + v4-COG Cognitive Invariants
+================================================================================
+Version:     v2.5.1-COG
+Status:      ACTIVE
+Scope:       Production-grade resilience simulation with deterministic
+             reproducibility, causal traceability, and explicit safety guards.
+
+CHANGELOG from v2.5:
+  [F-01 FIXED] Reboot logic now offers strict_math_mode vs. safety_guard_mode.
+               Governing equation 5 is honored in strict mode; threshold guard
+               is explicit and documented in safety mode.
+  [F-02 FIXED] recovery_rate is now a core state variable (self.alpha), not a
+               per-call injection. Causal traceability restored.
+  [F-03 FIXED] All probabilistic operations use a seedable, inspectable RNG.
+               Reproducibility invariant (v4-COG #7) satisfied.
+  [F-04 FIXED] Defensive clamp on stability after STRAINED degradation.
+  [F-05 FIXED] Telemetry returns structured dicts; string formatting is a
+               presentation-layer concern only.
+  [F-06 FIXED] Runtime loop accepts max_ticks for deterministic termination.
+================================================================================
+"""
+
+import random
+import time
+import json
+from dataclasses import dataclass, field
+from typing import Dict, Any, Tuple, Optional, List
+from enum import Enum, auto
+
+
+# ==============================================================================
+# TIER 1: [DETERMINISTIC] Core Types and State Enumeration
+# ==============================================================================
+
+class SystemState(Enum):
+    """[DETERMINISTIC] Operational state machine. No probabilistic ambiguity."""
+    BALANCED = auto()
+    STRAINED = auto()
+    COLLAPSED = auto()
+
+
+class RebootMode(Enum):
+    """
+    [DETERMINISTIC] Explicit behavioral mode selection.
+    STRICT_MATH    : Honor governing equation 5 unconditionally.
+    SAFETY_GUARD   : Add explicit threshold guard (documented deviation from raw math).
+    """
+    STRICT_MATH = auto()
+    SAFETY_GUARD = auto()
+
+
+@dataclass
+class TelemetrySnapshot:
+    """
+    [DETERMINISTIC] Structured telemetry — no string formatting at data layer.
+    Addresses F-05.
+    """
+    tick: int
+    state: SystemState
+    stability: float
+    max_stability: float
+    original_max: float
+    reboot_count: int
+    max_reboots: int
+    threshold: float
+    recovery_rate: float
+    rng_seed: Optional[int]
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "tick": self.tick,
+            "state": self.state.name,
+            "stability": round(self.stability, 2),
+            "max_stability": round(self.max_stability, 2),
+            "original_max": round(self.original_max, 2),
+            "reboots_used": (self.reboot_count, self.max_reboots),
+            "reboots_formatted": f"{self.reboot_count}/{self.max_reboots}",
+            "threshold": round(self.threshold, 2),
+            "recovery_rate": round(self.recovery_rate, 2),
+            "rng_seed": self.rng_seed,
+        }
+
+
+@dataclass
+class EventLog:
+    """
+    [DETERMINISTIC] Immutable event record for causal traceability.
+    Every state transition produces one EventLog entry.
+    """
+    tick: int
+    event_type: str
+    state_before: SystemState
+    state_after: SystemState
+    stability_before: float
+    stability_after: float
+    max_stability_before: float
+    max_stability_after: float
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+# ==============================================================================
+# TIER 1: [DETERMINISTIC] SingularityCore Engine
+# ==============================================================================
+
+class SingularityCore:
+    """
+    [DETERMINISTIC] PROTOCOL_SINGULARITY_v2.5.1 Core Engine
+
+    Mathematical fidelity:
+      E_t = S_t - T_t
+      Sigma_{t+1}, S_{t+1} = f(S_t, T_t)  [governing equation 2]
+      S_{t+1} = min(M_t, S_t + alpha)      [governing equation 3]
+      M_{t+1} = repair logic             [governing equation 4]
+      Reboot: M_{t+1} = M_t * (1-delta)    [governing equation 5]
+
+    v4-COG Invariants enforced:
+      #3 CAUSALITY OVER CORRELATION — every transition has a mechanism.
+      #6 GAP CHECK OVER GUESSING — defensive clamps, no silent failures.
+      #7 REPRODUCIBILITY OVER RANDOMNESS — seedable RNG, deterministic traces.
+    """
+
+    def __init__(
+        self,
+        max_stability: float = 100.0,
+        collapse_threshold: float = 10.0,
+        max_reboots: int = 2,
+        recovery_rate: float = 12.0,
+        reboot_mode: RebootMode = RebootMode.SAFETY_GUARD,
+        rng_seed: Optional[int] = None,
+    ):
+        # [ANCHOR STATE]: Immutable ceilings and initial baselines
+        self.original_max_capacity: float = float(max_stability)
+        self.max_stability: float = float(max_stability)
+        self.stability: float = float(max_stability)
+        self.threshold: float = float(collapse_threshold)
+        self.system_state: SystemState = SystemState.BALANCED
+
+        # [DETERMINISTIC] Recovery rate as core state variable (F-02 fix)
+        self.alpha: float = float(recovery_rate)
+
+        # [DETERMINISTIC] Reboot mode explicitly selected (F-01 fix)
+        self.reboot_mode: RebootMode = reboot_mode
+
+        # Reboot metrics
+        self.reboot_count: int = 0
+        self.max_reboots: int = int(max_reboots)
+
+        # [DETERMINISTIC] Seedable, inspectable RNG (F-03 fix)
+        self.rng_seed: Optional[int] = rng_seed
+        self._rng: random.Random = random.Random(rng_seed)
+
+        # [DETERMINISTIC] Causal trace log (v4-COG extension)
+        self.event_history: List[EventLog] = []
+        self.tick_counter: int = 0
+
+    # --------------------------------------------------------------------------
+    # [GATE] Internal consistency validator
+    # --------------------------------------------------------------------------
+    def _validate_invariants(self) -> None:
+        """
+        [GATE] Tier 2.5 — Deterministic invariant check.
+        Raises AssertionError if any hard invariant is violated.
+        """
+        assert self.max_stability >= self.threshold, \
+            f"[INVARIANT BREACH] max_stability ({self.max_stability}) < threshold ({self.threshold})"
+        assert self.stability >= 0.0, \
+            f"[INVARIANT BREACH] stability ({self.stability}) < 0"
+        assert self.stability <= self.max_stability, \
+            f"[INVARIANT BREACH] stability ({self.stability}) > max_stability ({self.max_stability})"
+        assert self.max_stability <= self.original_max_capacity, \
+            f"[INVARIANT BREACH] max_stability ({self.max_stability}) > original_max ({self.original_max_capacity})"
+
+    def _log_event(
+        self,
+        event_type: str,
+        s_before: float,
+        s_after: float,
+        m_before: float,
+        m_after: float,
+        state_after: SystemState,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        """[DETERMINISTIC] Append immutable event to causal trace."""
+        log = EventLog(
+            tick=self.tick_counter,
+            event_type=event_type,
+            state_before=self.system_state,
+            state_after=state_after,
+            stability_before=s_before,
+            stability_after=s_after,
+            max_stability_before=m_before,
+            max_stability_after=m_after,
+            metadata=metadata or {},
+        )
+        self.event_history.append(log)
+        self.system_state = state_after
+
+    # --------------------------------------------------------------------------
+    # [VECTOR 1: THREAT INJECTION]
+    # Governing Equation 1 & 2
+    # --------------------------------------------------------------------------
+    def inject_threat(self, threat_magnitude: float) -> Dict[str, Any]:
+        """
+        [DETERMINISTIC] Calculates instantaneous equilibrium against incoming force vector.
+        """
+        threat_magnitude = float(threat_magnitude)
+        s_before = self.stability
+        m_before = self.max_stability
+
+        net_equilibrium = self.stability - threat_magnitude
+
+        # State Transition 1: Structural Boundary Breach
+        if net_equilibrium < self.threshold:
+            self.stability = 0.0
+            self._log_event("THREAT_COLLAPSE", s_before, 0.0, m_before, m_before, SystemState.COLLAPSED,
+                           metadata={"threat": threat_magnitude, "net_eq": net_equilibrium})
+            return {
+                "event": "THREAT_COLLAPSE",
+                "state": self.system_state.name,
+                "threat": threat_magnitude,
+                "net_equilibrium": net_equilibrium,
+                "msg": f"CRITICAL: Threat ({threat_magnitude:.1f}) breached threshold ({self.threshold:.1f}).",
+            }
+
+        # State Transition 2: Strained Adaptation
+        elif threat_magnitude > (self.stability * 0.5):
+            degradation = threat_magnitude * 0.3
+            new_stability = self.stability - degradation
+
+            # [DETERMINISTIC] Defensive clamp (F-04 fix) — never go below 0
+            new_stability = max(0.0, new_stability)
+            # [DETERMINISTIC] Additional guard: if clamped value would violate threshold, collapse
+            if new_stability < self.threshold:
+                self.stability = 0.0
+                self._log_event("THREAT_COLLAPSE_CLAMPED", s_before, 0.0, m_before, m_before, SystemState.COLLAPSED,
+                               metadata={"threat": threat_magnitude, "degradation": degradation, "reason": "post-degradation clamp to threshold"})
+                return {
+                    "event": "THREAT_COLLAPSE",
+                    "state": self.system_state.name,
+                    "threat": threat_magnitude,
+                    "degradation": degradation,
+                    "msg": f"CRITICAL: Degradation ({degradation:.1f}) pushed stability below threshold.",
+                }
+
+            self.stability = new_stability
+            self._log_event("THREAT_STRAIN", s_before, new_stability, m_before, m_before, SystemState.STRAINED,
+                           metadata={"threat": threat_magnitude, "degradation": degradation})
+            return {
+                "event": "THREAT_STRAIN",
+                "state": self.system_state.name,
+                "threat": threat_magnitude,
+                "degradation": degradation,
+                "msg": f"STRAIN: Absorbed heavy force. Stability reduced by {degradation:.1f}.",
+            }
+
+        # State Transition 3: Equilibrium Maintained
+        else:
+            self._log_event("THREAT_ABSORBED", s_before, s_before, m_before, m_before, SystemState.BALANCED,
+                           metadata={"threat": threat_magnitude, "net_eq": net_equilibrium})
+            return {
+                "event": "THREAT_ABSORBED",
+                "state": self.system_state.name,
+                "threat": threat_magnitude,
+                "net_equilibrium": net_equilibrium,
+                "msg": f"BALANCED: Threat ({threat_magnitude:.1f}) absorbed with no state shift.",
+            }
+
+    # --------------------------------------------------------------------------
+    # [VECTOR 2: PASSIVE RECOVERY]
+    # Governing Equation 3
+    # --------------------------------------------------------------------------
+    def auto_recovery_tick(self) -> Dict[str, Any]:
+        """
+        [DETERMINISTIC] Restores active energy up to current maximum capacity ceiling.
+        Uses self.alpha (core state variable) instead of runtime injection (F-02 fix).
+        """
+        if self.system_state == SystemState.COLLAPSED:
+            return {"event": "RECOVERY_BLOCKED", "restored": 0.0, "msg": "Recovery offline: System COLLAPSED."}
+
+        s_before = self.stability
+        m_before = self.max_stability
+
+        self.stability = min(self.max_stability, self.stability + self.alpha)
+        restored = self.stability - s_before
+
+        # Auto-rebalance state if energy recovers above 80% threshold
+        new_state = self.system_state
+        if self.stability >= (self.max_stability * 0.8) and self.system_state == SystemState.STRAINED:
+            new_state = SystemState.BALANCED
+
+        self._log_event("RECOVERY", s_before, self.stability, m_before, m_before, new_state,
+                       metadata={"restored": restored, "alpha": self.alpha})
+
+        return {
+            "event": "RECOVERY_SUCCESS",
+            "restored": restored,
+            "current_stability": self.stability,
+            "max_capacity": self.max_stability,
+            "state": self.system_state.name,
+            "msg": f"HEALING: Restored +{restored:.1f} stability.",
+        }
+
+    # --------------------------------------------------------------------------
+    # [VECTOR 3: CORE REPAIR]
+    # Governing Equation 4
+    # --------------------------------------------------------------------------
+    def rare_structural_repair(
+        self,
+        chance_percent: float = 25.0,
+        repair_amount: float = 10.0,
+    ) -> Dict[str, Any]:
+        """
+        [PROBABILISTIC] Restoration of maximum baseline capacity toward original ceiling.
+        Uses self._rng (seedable) for reproducibility (F-03 fix).
+        """
+        if self.system_state == SystemState.COLLAPSED:
+            return {"event": "REPAIR_BLOCKED", "repaired": 0.0, "msg": "Repair offline: System COLLAPSED."}
+
+        if self.max_stability >= self.original_max_capacity:
+            return {"event": "REPAIR_MAXED", "repaired": 0.0, "msg": "Core at 100% capacity."}
+
+        # [PROBABILISTIC] Deterministic if seed is set; reproducible trace if seeded
+        roll = self._rng.uniform(0.0, 100.0)
+        if roll <= chance_percent:
+            m_before = self.max_stability
+            self.max_stability = min(self.original_max_capacity, self.max_stability + repair_amount)
+            repaired = self.max_stability - m_before
+            self._log_event("REPAIR", self.stability, self.stability, m_before, self.max_stability, self.system_state,
+                           metadata={"roll": roll, "threshold": chance_percent, "repaired": repaired})
+            return {
+                "event": "REPAIR_SUCCESS",
+                "repaired": repaired,
+                "new_max": self.max_stability,
+                "roll": roll,
+                "msg": f"REPAIR: Rebuilt +{repaired:.1f} max capacity baseline.",
+            }
+
+        return {"event": "REPAIR_IDLE", "repaired": 0.0, "roll": roll, "msg": "Structural scan idle."}
+
+    # --------------------------------------------------------------------------
+    # [VECTOR 4: EMERGENCY FAILSAFE]
+    # Governing Equation 5 — with explicit mode selection (F-01 fix)
+    # --------------------------------------------------------------------------
+    def manual_reboot(self, capacity_penalty_percent: float = 20.0) -> Dict[str, Any]:
+        """
+        [DETERMINISTIC] Hard overrides COLLAPSED state at permanent structural capacity cost.
+
+        Mode STRICT_MATH:
+            Honors governing equation 5 exactly: Sigma_{t+1}=BALANCED, S_{t+1}=M_{t+1}.
+            No threshold guard. If penalty pushes M_t below Theta, system enters
+            BALANCED at sub-threshold capacity and will collapse on next threat.
+            This is mathematically pure but operationally dangerous.
+
+        Mode SAFETY_GUARD (default):
+            Adds explicit threshold guard. If M_{t+1} <= Theta, system remains COLLAPSED
+            and reports REBOOT_FAILED_THRESHOLD. This is a documented safety extension
+            beyond the raw mathematical model.
+        """
+        if self.reboot_count >= self.max_reboots:
+            return {"event": "REBOOT_EXHAUSTED", "success": False, "msg": "Reboot denied: Core burned out."}
+
+        if self.system_state != SystemState.COLLAPSED:
+            return {"event": "REBOOT_UNNEEDED", "success": False, "msg": "Reboot skipped: System operational."}
+
+        s_before = self.stability  # 0.0
+        m_before = self.max_stability
+
+        # Apply structural capacity penalty
+        penalty = self.max_stability * (capacity_penalty_percent / 100.0)
+        projected_max = m_before - penalty
+
+        # [GATE] Mode-dependent behavior (F-01 fix)
+        if self.reboot_mode == RebootMode.SAFETY_GUARD:
+            if projected_max <= self.threshold:
+                self._log_event("REBOOT_FAILED", s_before, 0.0, m_before, m_before, SystemState.COLLAPSED,
+                               metadata={"penalty": penalty, "projected_max": projected_max, "mode": "SAFETY_GUARD"})
+                return {
+                    "event": "REBOOT_FAILED_THRESHOLD",
+                    "success": False,
+                    "projected_max": projected_max,
+                    "msg": "Core capacity below minimum limit.",
+                }
+
+        # Commit the reboot
+        self.max_stability = projected_max
+        self.reboot_count += 1
+        self.stability = self.max_stability
+
+        self._log_event("REBOOT", s_before, self.stability, m_before, self.max_stability, SystemState.BALANCED,
+                       metadata={"penalty": penalty, "reboot_number": self.reboot_count, "mode": self.reboot_mode.name})
+
+        return {
+            "event": "REBOOT_SUCCESS",
+            "success": True,
+            "reboot_number": self.reboot_count,
+            "penalty": penalty,
+            "new_max": self.max_stability,
+            "mode": self.reboot_mode.name,
+            "msg": f"REBOOT ({self.reboot_count}/{self.max_reboots}): Core reset to BALANCED at -{penalty:.1f} capacity.",
+        }
+
+    # --------------------------------------------------------------------------
+    # [DETERMINISTIC] Telemetry
+    # --------------------------------------------------------------------------
+    def get_telemetry(self) -> TelemetrySnapshot:
+        """Returns structured snapshot of system state (F-05 fix)."""
+        return TelemetrySnapshot(
+            tick=self.tick_counter,
+            state=self.system_state,
+            stability=self.stability,
+            max_stability=self.max_stability,
+            original_max=self.original_max_capacity,
+            reboot_count=self.reboot_count,
+            max_reboots=self.max_reboots,
+            threshold=self.threshold,
+            recovery_rate=self.alpha,
+            rng_seed=self.rng_seed,
+        )
+
+    def get_event_history(self) -> List[EventLog]:
+        """[DETERMINISTIC] Returns immutable causal trace."""
+        return list(self.event_history)
+
+    def export_trace_json(self) -> str:
+        """[DETERMINISTIC] Full causal trace as JSON for external audit."""
+        records = []
+        for ev in self.event_history:
+            records.append({
+                "tick": ev.tick,
+                "event_type": ev.event_type,
+                "state_before": ev.state_before.name,
+                "state_after": ev.state_after.name,
+                "stability_delta": round(ev.stability_after - ev.stability_before, 2),
+                "max_delta": round(ev.max_stability_after - ev.max_stability_before, 2),
+                "metadata": ev.metadata,
+            })
+        return json.dumps(records, indent=2)
+
+
+# ==============================================================================
+# TIER 1: [DETERMINISTIC] System Driver Loop
+# ==============================================================================
+
+def execute_protocol_runtime(
+    max_stability: float = 100.0,
+    collapse_threshold: float = 10.0,
+    max_reboots: int = 2,
+    recovery_rate: float = 12.0,
+    max_ticks: int = 50,
+    rng_seed: int = 42,
+    reboot_mode: RebootMode = RebootMode.SAFETY_GUARD,
+    verbose: bool = True,
+    tick_delay: float = 0.0,
+) -> Dict[str, Any]:
+    """
+    [DETERMINISTIC] Standard execution loop with bounded termination (F-06 fix).
+
+    Args:
+        max_ticks: Hard termination limit for deterministic, reproducible runs.
+        rng_seed: Seed for the core's RNG, ensuring identical threat sequences.
+        tick_delay: Seconds between ticks (0.0 for instant execution).
+
+    Returns:
+        Dict with final telemetry, event count, and causal trace JSON.
+    """
+    core = SingularityCore(
+        max_stability=max_stability,
+        collapse_threshold=collapse_threshold,
+        max_reboots=max_reboots,
+        recovery_rate=recovery_rate,
+        reboot_mode=reboot_mode,
+        rng_seed=rng_seed,
+    )
+
+    if verbose:
+        print("=== ACTIVATING PROTOCOL_SINGULARITY_v2.5.1 RUNTIME ===")
+        print(f"    Seed: {rng_seed} | Mode: {reboot_mode.name} | Max Ticks: {max_ticks}")
+        print("=" * 60)
+
+    for tick in range(1, max_ticks + 1):
+        core.tick_counter = tick
+
+        # Step 1: Ingest Threat Vector (deterministic if seeded)
+        threat_force = round(core._rng.uniform(20.0, 95.0), 1)
+        threat_res = core.inject_threat(threat_force)
+
+        # Step 2: Catch Collapse Event & Attempt Emergency Reboot
+        if core.system_state == SystemState.COLLAPSED:
+            reboot_res = core.manual_reboot(capacity_penalty_percent=20.0)
+            if not reboot_res["success"]:
+                if verbose:
+                    print(f"[T+{tick:02d}] TERMINAL COLLAPSE: {reboot_res['msg']}")
+                break
+            else:
+                if verbose:
+                    print(f"[T+{tick:02d}] REBOOT: {reboot_res['msg']}")
+
+        # Step 3: Execute Passive Healing and Structural Repair
+        else:
+            heal_res = core.auto_recovery_tick()
+            repair_res = core.rare_structural_repair(chance_percent=25.0, repair_amount=10.0)
+
+            status = core.get_telemetry()
+            if verbose:
+                print(
+                    f"[T+{tick:02d}] State: {status.state.name:<9} | "
+                    f"Stab: {status.stability:>5.1f}/{status.max_stability:>5.1f} | "
+                    f"{threat_res['msg']}"
+                )
+                if repair_res["event"] == "REPAIR_SUCCESS":
+                    print(f"       +-- REPAIR: {repair_res['msg']}")
+
+        # [GATE] Invariant validation after every tick
+        core._validate_invariants()
+
+        if tick_delay > 0:
+            time.sleep(tick_delay)
+    else:
+        if verbose:
+            print(f"=== MAX TICKS ({max_ticks}) REACHED — GRACEFUL TERMINATION ===")
+
+    final = core.get_telemetry()
+    if verbose:
+        print("\n=== FINAL TELEMETRY ===")
+        print(json.dumps(final.to_dict(), indent=2))
+        print(f"\nTotal events logged: {len(core.event_history)}")
+
+    return {
+        "final_telemetry": final.to_dict(),
+        "event_count": len(core.event_history),
+        "event_history_json": core.export_trace_json(),
+        "terminated_at_tick": core.tick_counter,
+        "terminal_state": final.state.name,
+    }
+
+
+# ==============================================================================
+# TIER 1: [DETERMINISTIC] Demonstration Entry Point
+# ==============================================================================
+
+if __name__ == "__main__":
+    # Run 1: Safety Guard Mode (default, production-safe)
+    print("\n" + "=" * 60)
+    print("RUN 1: SAFETY_GUARD MODE (seed=42, max_ticks=30)")
+    print("=" * 60)
+    result_safe = execute_protocol_runtime(
+        max_ticks=30,
+        rng_seed=42,
+        reboot_mode=RebootMode.SAFETY_GUARD,
+        tick_delay=0.0,
+    )
+
+    # Run 2: Strict Math Mode (mathematically pure, operationally dangerous)
+    print("\n" + "=" * 60)
+    print("RUN 2: STRICT_MATH MODE (seed=42, max_ticks=30)")
+    print("=" * 60)
+    result_strict = execute_protocol_runtime(
+        max_ticks=30,
+        rng_seed=42,
+        reboot_mode=RebootMode.STRICT_MATH,
+        tick_delay=0.0,
+    )
