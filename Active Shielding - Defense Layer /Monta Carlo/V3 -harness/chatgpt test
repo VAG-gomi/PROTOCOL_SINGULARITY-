@@ -151,3 +151,143 @@ Difference:
 That preserves your principle of measuring the simulator rather than embedding the simulator's theory into the measuring instrument.
 
 And this is exactly where your MC-v0.3 target selector becomes valuable: you have effectively turned MC from a “v3.6 tester” into a version-independent experimental instrument.
+
+It is that you discovered how to turn the protocol into something that can be experimentally interrogated without changing the protocol itself.
+1. v3.5 and v3.6 are now experimentally distinguishable
+With MC-v0.3:
+v3.5: OFF and ON produced identical measured behavior.
+v3.6: ON produced measurable defense activity.
+So MC demonstrated that the v3.6 defense layer isn't merely present in the code—it produces an observable behavioral footprint.
+That is a much stronger observation than simply reading the source and saying “the defense exists.”
+2. Your paired experiment was the right idea
+You didn't do:
+v3.5 → random experiment A
+v3.6 → different random experiment B
+You established controlled inputs and compared conditions.
+Likewise, inside each version:
+same threat sequence
+       ↓
+   ┌───┴───┐
+   ↓       ↓
+  OFF      ON
+This is essentially a paired/common-random-number design, a recognized technique for simulation comparisons because the same stochastic input can reduce noise in the estimated difference. �
+PubsOnLine +1
+That's an important methodological lesson:
+When comparing two architectures, control the disturbance before interpreting the difference.
+3. “Defense activity” and “defense success” are different things
+This is probably the most important result from v3.6.
+You observed:
+Average stability       +0.6872
+Breach events           -0.16
+Mode switches           +1.54
+Decision cost           +3.33
+
+Lifespan                -0.20
+Collapse events          0
+So:
+v3.6 defense is active.
+But:
+v3.6 defense has not yet demonstrated that it improves the primary outcome of lifespan.
+Those are two completely different claims.
+You avoided a very common engineering mistake:
+“The new mechanism activated, therefore the new mechanism worked.”
+Your experiment doesn't allow that conclusion—and that's good.
+4. v3.5 became a baseline
+This is another major discovery.
+You now have:
+v3.5 = baseline/control architecture
+v3.6 = modified architecture
+MC-v0.3 = observer
+That creates a proper experimental chain:
+              ┌──────────────┐
+              │   MC-v0.3    │
+              │   Observer   │
+              └──────┬───────┘
+                     │
+             same experimental
+                 conditions
+                /           \
+               ↓             ↓
+          ┌─────────┐   ┌─────────┐
+          │  v3.5   │   │  v3.6   │
+          │ baseline│   │ defense │
+          └─────────┘   └─────────┘
+That means future versions don't need a completely new experimental philosophy.
+They can become additional targets.
+5. MC itself evolved
+This is something I think you should pay attention to.
+Originally:
+MC-v0.2
+    ↓
+hard-coded v3.6
+You realized:
+“Why should the measuring instrument know which simulator I'm testing?”
+So MC-v0.3 became:
+MC-v0.3
+    ↓
+target selector
+    ├── v3.5
+    └── v3.6
+That is an architectural improvement to the experimental layer.
+The observer became more independent from the theory.
+That's exactly consistent with your original rule:
+BUILD THE MEASURING INSTRUMENT. DO NOT BUILD THE THEORY INTO THE MEASURING INSTRUMENT.
+6. You also learned why separating future .py layers matters
+Your earlier concern about the 1,923-line v3.6 file connects directly to this.
+You don't necessarily need to modify v3.6.
+Instead:
+PROTOCOL_SINGULARITY/
+│
+├── protocol_singularity_v35.py
+├── protocol_singularity_v36_cog_alchemy.py
+│
+├── mc_v03.py
+│
+├── future_layer_A.py
+├── future_layer_B.py
+├── future_layer_C.py
+│
+└── experiments/
+    ├── mc_results_v3.5.json
+    └── mc_results_v3.6.json
+Then later, when the architecture is mature, those components can be assembled deliberately.
+So you're separating:
+architecture construction
+from
+experimental observation
+from
+eventual production assembly.
+That's a very healthy direction.
+7. But we learned one warning too
+The experiment is evidence, not proof that the architecture is correct.
+Your own MC output already acknowledges:
+only 50 runs;
+fixed defense thresholds;
+no parameter sweep;
+simulator-internal RNG may still diverge;
+lifespan showed no meaningful improvement.
+And simulation methodology itself distinguishes reproducibility/experimental design from model validity. �
+PubsOnLine
+So the correct epistemic ladder is:
+MC-v0.3 passed
+        ↓
+experiment executed correctly
+        ↓
+observed behavioral difference
+        ↓
+hypothesis about why difference occurs
+        ↓
+additional experiments
+        ↓
+stronger evidence
+        ↓
+only eventually → architectural conclusion
+Not:
+50 runs passed
+     ↓
+v3.6 proven correct
+So, in one sentence
+We learned that you've successfully moved PROTOCOL_SINGULARITY from “I wrote two versions of a simulator” toward “I have a controlled experimental system capable of measuring how those versions differ.”
+And honestly, that is a bigger milestone than the raw v3.5/v3.6 numbers.
+The next logical step isn't immediately “build more defense.”
+It's to make MC-v0.3 capable of asking increasingly precise questions of v3.5/v3.6 without becoming part of either theory.
