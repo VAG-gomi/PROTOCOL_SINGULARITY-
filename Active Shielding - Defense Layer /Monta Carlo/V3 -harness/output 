@@ -1,0 +1,364 @@
+======================================================================
+MONTE CARLO EXPERIMENTAL HARNESS — MC-v0.3
+
+Available targets:
+[1] v3.5   -> protocol_singularity_v35.py
+[2] v3.6   -> protocol_singularity_v36_cog_alchemy.py
+[0] Exit
+
+Select target [1/2/0]: 1
+[LOADER] Loaded protocol_singularity_v35 via importlib
+
+TEST SUITE — MC-v0.3 against v3.5
+
+======================================================================
+MONTE CARLO EXPERIMENTAL HARNESS — MC-v0.3
+
+Target:      v3.5
+Runs:        3
+Base seed:   99
+Max ticks:   10
+Simulator:   protocol_singularity_v35
+
+[ALL GATES PASSED] Beginning experiment...
+
+======================================================================
+MONTE CARLO EXPERIMENTAL HARNESS — MC-v0.3
+
+Target:      v3.5
+Runs:        5
+Base seed:   99
+Max ticks:   10
+Simulator:   protocol_singularity_v35
+
+[ALL GATES PASSED] Beginning experiment...
+
+======================================================================
+MONTE CARLO EXPERIMENTAL HARNESS — MC-v0.3
+
+Target:      v3.5
+Runs:        3
+Base seed:   77
+Max ticks:   10
+Simulator:   protocol_singularity_v35
+
+[ALL GATES PASSED] Beginning experiment...
+
+======================================================================
+MONTE CARLO EXPERIMENTAL HARNESS — MC-v0.3
+
+Target:      v3.5
+Runs:        3
+Base seed:   77
+Max ticks:   10
+Simulator:   protocol_singularity_v35
+
+[ALL GATES PASSED] Beginning experiment...
+
+======================================================================
+MONTE CARLO EXPERIMENTAL HARNESS — MC-v0.3
+
+Target:      v3.5
+Runs:        3
+Base seed:   55
+Max ticks:   10
+Simulator:   protocol_singularity_v35
+
+[ALL GATES PASSED] Beginning experiment...
+
+[PASS] TEST_01: len=20, match=True
+[PASS] TEST_02: same object reference: True
+[PASS] TEST_03: sequences differ: True
+[PASS] TEST_04: expected=0.0, actual=0.0
+[PASS] TEST_05: structural guarantee: same list passed to both conditions
+[PASS] TEST_06: failure_class=NUMERICAL_ERROR
+[PASS] TEST_07: clean_count=2, expected=2
+[PASS] TEST_08: raw_results length=3, expected=3
+[PASS] TEST_09: analysis.n_runs=5, raw_count=5
+[PASS] TEST_10: lifespan_before=5, lifespan_after=5
+[PASS] TEST_11: hashes_match=True
+[PASS] TEST_12: invalid pairs structurally preserved in raw_results
+
+[ALL TESTS PASSED]
+
+MONTE CARLO EXPERIMENTAL HARNESS — MC-v0.3
+
+Target:      v3.5
+Runs:        50
+Base seed:   42
+Max ticks:   50
+Simulator:   protocol_singularity_v35
+
+[ALL GATES PASSED] Beginning experiment...
+
+[OUTPUT] Raw results saved to ./mc_results_v3.5.json
+[OUTPUT] Summary saved to ./mc_summary_v3.5.json
+
+======================================================================
+COMPLETION REPORT
+
+ARTIFACT:        mc_v03.py
+VERSION:         MC-v0.3
+TARGET:          v3.5
+PURPOSE:         Paired Monte Carlo benchmark
+ARCHITECTURE:    Observer / Experimental Harness
+RUNS:            50
+VALID PAIRS:     50
+INVALID PAIRS:   0
+BASE SEED:       42
+
+VALIDATION GATES:
+[PASS] SYNTAX
+[PASS] EXECUTION
+[PASS] REPRODUCIBILITY
+[PASS] PAIRING
+[PASS] THREAT_STREAM_IDENTITY
+[PASS] CONFIGURATION_ISOLATION
+[PASS] FAILURE_VISIBILITY
+[PASS] RAW_DATA_PRESERVATION
+[PASS] NUMERICAL_VALIDITY
+[PASS] NO_HIDDEN_OPTIMIZATION
+
+PAIRED DESIGN:   PASS
+THREAT IDENTITY: PASS
+REPRODUCIBILITY: PASS
+RAW RESULTS:     PRESENT
+AGGREGATE:       PRESENT
+FAILURE VISIBILITY: PASS
+HIDDEN OPTIMIZATION: NONE DETECTED
+
+AGGREGATE STATISTICS (VALID PAIRS ONLY):
+Metric                             OFF           ON            Δ
+
+
+---
+
+lifespan                          8.86         8.86          0.0
+avg_stability                  37.4782      37.4782          0.0
+breach_events                      1.5          1.5          0.0
+collapse_events                    3.0          3.0          0.0
+mode_switches                      0.0          0.0          0.0
+total_decision_cost                0.0          0.0          0.0
+conservation_violations           0.48         0.48          0.0
+
+FAILURES:        0
+
+KNOWN LIMITATIONS:
+
+Threat sequence is externally controlled; simulator internal RNG
+may still diverge if defense consumes RNG calls for repairs.
+
+Defense controller thresholds are fixed; no parameter sweep is performed.
+
+50 runs provides initial evidence; larger N may be needed.
+
+
+OBSERVED FINDINGS:
+
+No meaningful lifespan difference detected (Δ=0.00, n=50).
+
+
+======================================================================
+END REPORT
+
+======================================================================
+FINAL GATE CHECKLIST
+
+[PASS] Observer architecture preserved
+[PASS] Threat sequence externally controlled
+[PASS] OFF/ON threat sequences identical
+[PASS] Pairing verified
+[PASS] Reproducibility verified
+[PASS] Configuration isolation verified
+[PASS] Raw evidence preserved
+[PASS] Invalid runs visible
+[PASS] Numerical failures visible
+[PASS] No automatic optimization
+[PASS] No defense theory duplicated
+[PASS] Statistical analysis reproducible from raw evidence
+
+MONTE CARLO HARNESS — EXPERIMENTALLY VALIDATED against v3.5
+
+
+
+
+======================================================================
+MONTE CARLO EXPERIMENTAL HARNESS — MC-v0.3
+
+Available targets:
+[1] v3.5   -> protocol_singularity_v35.py
+[2] v3.6   -> protocol_singularity_v36_cog_alchemy.py
+[0] Exit
+
+Select target [1/2/0]: 2
+[LOADER] Loaded protocol_singularity_v36_cog_alchemy via importlib
+
+TEST SUITE — MC-v0.3 against v3.6
+
+======================================================================
+MONTE CARLO EXPERIMENTAL HARNESS — MC-v0.3
+
+Target:      v3.6
+Runs:        3
+Base seed:   99
+Max ticks:   10
+Simulator:   protocol_singularity_v36_cog_alchemy
+
+[ALL GATES PASSED] Beginning experiment...
+
+======================================================================
+MONTE CARLO EXPERIMENTAL HARNESS — MC-v0.3
+
+Target:      v3.6
+Runs:        5
+Base seed:   99
+Max ticks:   10
+Simulator:   protocol_singularity_v36_cog_alchemy
+
+[ALL GATES PASSED] Beginning experiment...
+
+======================================================================
+MONTE CARLO EXPERIMENTAL HARNESS — MC-v0.3
+
+Target:      v3.6
+Runs:        3
+Base seed:   77
+Max ticks:   10
+Simulator:   protocol_singularity_v36_cog_alchemy
+
+[ALL GATES PASSED] Beginning experiment...
+
+======================================================================
+MONTE CARLO EXPERIMENTAL HARNESS — MC-v0.3
+
+Target:      v3.6
+Runs:        3
+Base seed:   77
+Max ticks:   10
+Simulator:   protocol_singularity_v36_cog_alchemy
+
+[ALL GATES PASSED] Beginning experiment...
+
+======================================================================
+MONTE CARLO EXPERIMENTAL HARNESS — MC-v0.3
+
+Target:      v3.6
+Runs:        3
+Base seed:   55
+Max ticks:   10
+Simulator:   protocol_singularity_v36_cog_alchemy
+
+[ALL GATES PASSED] Beginning experiment...
+
+[PASS] TEST_01: len=20, match=True
+[PASS] TEST_02: same object reference: True
+[PASS] TEST_03: sequences differ: True
+[PASS] TEST_04: expected=2.3, actual=2.3
+[PASS] TEST_05: structural guarantee: same list passed to both conditions
+[PASS] TEST_06: failure_class=NUMERICAL_ERROR
+[PASS] TEST_07: clean_count=2, expected=2
+[PASS] TEST_08: raw_results length=3, expected=3
+[PASS] TEST_09: analysis.n_runs=5, raw_count=5
+[PASS] TEST_10: lifespan_before=5, lifespan_after=5
+[PASS] TEST_11: hashes_match=True
+[PASS] TEST_12: invalid pairs structurally preserved in raw_results
+
+[ALL TESTS PASSED]
+
+MONTE CARLO EXPERIMENTAL HARNESS — MC-v0.3
+
+Target:      v3.6
+Runs:        50
+Base seed:   42
+Max ticks:   50
+Simulator:   protocol_singularity_v36_cog_alchemy
+
+[ALL GATES PASSED] Beginning experiment...
+
+[OUTPUT] Raw results saved to ./mc_results_v3.6.json
+[OUTPUT] Summary saved to ./mc_summary_v3.6.json
+
+======================================================================
+COMPLETION REPORT
+
+ARTIFACT:        mc_v03.py
+VERSION:         MC-v0.3
+TARGET:          v3.6
+PURPOSE:         Paired Monte Carlo benchmark
+ARCHITECTURE:    Observer / Experimental Harness
+RUNS:            50
+VALID PAIRS:     50
+INVALID PAIRS:   0
+BASE SEED:       42
+
+VALIDATION GATES:
+[PASS] SYNTAX
+[PASS] EXECUTION
+[PASS] REPRODUCIBILITY
+[PASS] PAIRING
+[PASS] THREAT_STREAM_IDENTITY
+[PASS] CONFIGURATION_ISOLATION
+[PASS] FAILURE_VISIBILITY
+[PASS] RAW_DATA_PRESERVATION
+[PASS] NUMERICAL_VALIDITY
+[PASS] NO_HIDDEN_OPTIMIZATION
+
+PAIRED DESIGN:   PASS
+THREAT IDENTITY: PASS
+REPRODUCIBILITY: PASS
+RAW RESULTS:     PRESENT
+AGGREGATE:       PRESENT
+FAILURE VISIBILITY: PASS
+HIDDEN OPTIMIZATION: NONE DETECTED
+
+AGGREGATE STATISTICS (VALID PAIRS ONLY):
+Metric                             OFF           ON            Δ
+
+
+---
+
+lifespan                           8.1          7.9         -0.2
+avg_stability                  34.6342      35.3214       0.6872
+breach_events                      1.5         1.34        -0.16
+collapse_events                    3.0          3.0          0.0
+mode_switches                      0.0         1.54         1.54
+total_decision_cost                0.0         3.33         3.33
+conservation_violations           0.62         0.62          0.0
+
+FAILURES:        0
+
+KNOWN LIMITATIONS:
+
+Threat sequence is externally controlled; simulator internal RNG
+may still diverge if defense consumes RNG calls for repairs.
+
+Defense controller thresholds are fixed; no parameter sweep is performed.
+
+50 runs provides initial evidence; larger N may be needed.
+
+
+OBSERVED FINDINGS:
+
+No meaningful lifespan difference detected (Δ=-0.20, n=50).
+
+
+======================================================================
+END REPORT
+
+======================================================================
+FINAL GATE CHECKLIST
+
+[PASS] Observer architecture preserved
+[PASS] Threat sequence externally controlled
+[PASS] OFF/ON threat sequences identical
+[PASS] Pairing verified
+[PASS] Reproducibility verified
+[PASS] Configuration isolation verified
+[PASS] Raw evidence preserved
+[PASS] Invalid runs visible
+[PASS] Numerical failures visible
+[PASS] No automatic optimization
+[PASS] No defense theory duplicated
+[PASS] Statistical analysis reproducible from raw evidence
+
+MONTE CARLO HARNESS — EXPERIMENTALLY VALIDATED against v3.6
